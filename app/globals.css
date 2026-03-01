@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* 1. Force Tailwind to only use the .dark class */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    color-scheme: light !important;
+  }
+
+  .dark {
+    --glass-bg: rgba(10, 10, 10, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    color-scheme: dark !important;
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body {
+    background-color: var(--background) !important;
+    color: var(--foreground) !important;
+    transition: none;
+    min-height: 100vh;
+    height: auto;
+  }
+
+  /* Keep smooth scroll, but disable global snap to avoid sticky/observer conflicts */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.glass-effect {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(40px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+.bg-glass {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .bg-glass {
+  background-color: rgba(10, 10, 10, 0.4);
+}
+
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1.5px);
+}
+
+.dark .bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1.5px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1.5px, transparent 1px);
+}
+
+.bg-dot-pattern {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.18) 1.1px, transparent 1.1px);
+}
+
+.dark .bg-dot-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1.1px, transparent 1.1px);
+}
+
+.logo-filter {
+  @apply transition-all duration-500;
+}
+
+.dark .logo-filter {
+  filter: invert(1) brightness(2);
+}
+
+@keyframes shimmer-move {
+  0% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: -100% center;
+  }
+}
+
+.animate-shimmer-text {
+  animation: shimmer-move 4s linear infinite !important;
+}
+
+/* Camera CTA: start shimmer immediately on hover from frame 0 */
+.camera-sheen {
+  opacity: 0;
+  animation: none;
+  transition: none;
+}
+
+.group:hover .camera-sheen,
+.group:focus-visible .camera-sheen {
+  opacity: 0.72;
+  animation: shimmer-move 4s linear infinite;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 1rem));
+  }
+}
+
+.animate-scroll {
+  display: flex;
+  width: max-content;
+  animation: scroll var(--animation-duration, 40s) linear infinite;
+  animation-direction: var(--animation-direction, forwards);
+}
+
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+vercel-live-feedback {
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+.fixed.z-\[999\] {
+  pointer-events: none !important;
+}
+
+.fixed.z-\[999\] nav {
+  pointer-events: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-shimmer-text,
+  .animate-scroll,
+  .animate-ping {
+    animation: none !important;
+  }
+}

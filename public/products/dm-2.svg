@@ -1,0 +1,58 @@
+<svg width="860" height="1080" viewBox="0 0 860 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #0e111a; }
+      .frame { fill: #0b0f16; stroke: #374151; stroke-width: 2; }
+      .chip { fill: #1f2937; }
+      .hero { fill: #111827; }
+      .bar { fill: #1f2937; }
+      .cta { fill: #111827; stroke: #22d3ee; stroke-width: 2; }
+      .card { fill: #111827; stroke: #374151; stroke-width: 2; }
+      .title { fill: #f9fafb; font: 700 64px Arial, sans-serif; }
+      .sub { fill: #d1d5db; font: 600 42px Arial, sans-serif; }
+      .ctaText { fill: #e5e7eb; font: 700 26px Arial, sans-serif; }
+      .meta { fill: #9ca3af; font: 400 24px Arial, sans-serif; }
+
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #edf3fb; }
+        .frame { fill: #f9fbff; stroke: #b6c3d3; }
+        .chip { fill: #d8e3f0; }
+        .hero { fill: #dbe7f5; }
+        .bar { fill: #d2ddec; }
+        .cta { fill: #eef4fb; stroke: #0891b2; }
+        .card { fill: #eef4fb; stroke: #b6c3d3; }
+        .title { fill: #0f172a; }
+        .sub { fill: #1f2937; }
+        .ctaText { fill: #0f172a; }
+        .meta { fill: #475569; }
+      }
+    </style>
+    <linearGradient id="accent" x1="120" y1="220" x2="740" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.5" stop-color="#C084FC"/>
+      <stop offset="1" stop-color="#F9A8D4"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="860" height="1080" rx="56" class="bg"/>
+  <rect x="60" y="60" width="740" height="960" rx="36" class="frame"/>
+  <rect x="100" y="120" width="120" height="24" rx="12" class="chip"/>
+  <circle cx="690" cy="132" r="12" fill="#22D3EE"/>
+  <circle cx="724" cy="132" r="12" fill="#C084FC"/>
+  <circle cx="758" cy="132" r="12" fill="#FDE68A"/>
+
+  <rect x="100" y="190" width="660" height="320" rx="28" class="hero"/>
+  <rect x="100" y="190" width="660" height="320" rx="28" fill="url(#accent)" fill-opacity="0.18"/>
+  <text x="130" y="280" class="title">CAMPAIGN</text>
+  <text x="130" y="350" class="sub">Launch in 5 Days</text>
+
+  <rect x="100" y="560" width="420" height="34" rx="8" class="bar"/>
+  <rect x="100" y="614" width="600" height="28" rx="8" class="bar"/>
+  <rect x="100" y="660" width="500" height="28" rx="8" class="bar"/>
+
+  <rect x="100" y="750" width="220" height="62" rx="18" class="cta"/>
+  <text x="145" y="790" class="ctaText">Book Now</text>
+
+  <rect x="100" y="860" width="660" height="96" rx="18" class="card"/>
+  <text x="130" y="918" class="meta">Meta + Instagram Creative Mock</text>
+</svg>

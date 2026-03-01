@@ -1,0 +1,74 @@
+import type { Config } from "tailwindcss";
+const {
+  default: flattenColorPalette,
+} = require("tailwindcss/lib/util/flattenColorPalette");
+
+const config: Config = {
+  // Use "class" to strictly ignore system media queries
+  darkMode: "class", 
+  
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        sky: {
+          500: "#0ea5e9",
+        },
+        // We force standard grays here to prevent "system gray" bleed
+        neutral: {
+          50: "#fafafa",
+          100: "#f5f5f5",
+          200: "#e5e5e5",
+          800: "#262626",
+          900: "#171717",
+          950: "#0a0a0a",
+        }
+      },
+      animation: {
+      
+        scroll: "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
+        "gradient-x": "gradient-x 3s ease infinite",
+        'shimmer-text': 'shimmer-text 3s linear infinite',
+      },
+      keyframes: {
+        scroll: {
+          to: {
+            transform: "translate(calc(-50% - 0.5rem))",
+          },
+        },
+        "gradient-x": {
+          "0%, 100%": {
+            "background-size": "200% 200%",
+            "background-position": "left center",
+          },
+          "50%": {
+            "background-size": "200% 200%",
+            "background-position": "right center",
+          },
+          {'shimmer-text': 'shimmer-text 3s linear infinite',}
+        },
+      },
+    },
+  },
+  plugins: [addVariablesForColors],
+};
+
+function addVariablesForColors({ addBase, theme }: any) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+
+  // This injects variables into :root. 
+  // Combined with darkMode: "class", these won't change unless the HTML class changes.
+  addBase({
+    ":root": newVars,
+  });
+}
+
+export default config;

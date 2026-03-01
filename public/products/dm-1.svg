@@ -1,0 +1,55 @@
+<svg width="860" height="1080" viewBox="0 0 860 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #090c14; }
+      .panel { fill: #0b0f16; stroke: #334155; stroke-width: 2; }
+      .screen { fill: #1f2937; }
+      .screen-overlay { fill: #111827; opacity: .65; }
+      .ring { fill: #0b1220; stroke: #e5e7eb; stroke-opacity: .4; stroke-width: 2; }
+      .play { fill: #f9fafb; }
+      .bar-bg { fill: #1e293b; }
+      .bar-active { fill: #22d3ee; }
+      .chip { fill: #1f2937; }
+      .title { fill: #f9fafb; font: 700 58px Arial, sans-serif; }
+      .subtitle { fill: #cbd5e1; font: 600 34px Arial, sans-serif; }
+      .meta { fill: #94a3b8; font: 400 24px Arial, sans-serif; }
+
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #eef3f9; }
+        .panel { fill: #f9fbff; stroke: #bcc8d7; }
+        .screen { fill: #dbe7f5; }
+        .screen-overlay { fill: #e7eef8; opacity: .8; }
+        .ring { fill: #edf3fa; stroke: #94a3b8; stroke-opacity: .75; }
+        .play { fill: #0f172a; }
+        .bar-bg { fill: #c9d8ea; }
+        .bar-active { fill: #0891b2; }
+        .chip { fill: #d5e1ef; }
+        .title { fill: #0f172a; }
+        .subtitle { fill: #1f2937; }
+        .meta { fill: #475569; }
+      }
+    </style>
+    <linearGradient id="dm1Grad" x1="100" y1="80" x2="760" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#090C14"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="860" height="1080" rx="56" class="bg"/>
+  <rect x="86" y="80" width="688" height="920" rx="34" class="panel"/>
+  <rect x="120" y="140" width="620" height="660" rx="26" class="screen"/>
+  <rect x="120" y="140" width="620" height="660" rx="26" class="screen-overlay"/>
+
+  <circle cx="430" cy="470" r="78" class="ring"/>
+  <path d="M470 470L400 512V428L470 470Z" class="play"/>
+
+  <text x="140" y="250" class="title">REELS AD</text>
+  <text x="140" y="310" class="subtitle">15 sec conversion script</text>
+
+  <rect x="120" y="840" width="620" height="18" rx="9" class="bar-bg"/>
+  <rect x="120" y="840" width="410" height="18" rx="9" class="bar-active"/>
+  <rect x="120" y="890" width="320" height="32" rx="10" class="chip"/>
+  <rect x="460" y="890" width="280" height="32" rx="10" class="chip"/>
+
+  <text x="140" y="943" class="meta">Facebook Reel Creative Preview</text>
+</svg>
