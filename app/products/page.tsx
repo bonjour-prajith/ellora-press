@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductGallery } from "@/components/sections/ProductGallery";
 import { PRODUCT_DATA } from "@/data/site-data";
 import MiniFooter from "@/components/MiniFooter";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import {
   BarChart3,
   LineChart,
@@ -19,6 +20,14 @@ export default function ProductsPage() {
   const [isMainCardRevealed, setIsMainCardRevealed] = useState(false);
   const [activeMarketingIndex, setActiveMarketingIndex] = useState(0);
   const [isDmCardsExpanded, setIsDmCardsExpanded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = mounted && resolvedTheme === "dark";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const marketingKit = [
     {
       title: "Social Media Management",
@@ -84,7 +93,7 @@ export default function ProductsPage() {
 
             <div className="lg:col-span-7">
               <Image
-                src="/products/special-labels.png"
+                src="/products/special-labels.webp"
                 alt="Special label products"
                 width={1400}
                 height={900}
@@ -95,13 +104,13 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      <section id="mystery-products" className="relative w-full overflow-hidden bg-[#040507] py-10 text-white md:py-16">
+      <section id="mystery-products" className="relative w-full overflow-hidden bg-[#040507] py-4 text-white md:py-8">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.18),transparent_45%),radial-gradient(ellipse_at_bottom_right,rgba(217,70,239,0.2),transparent_50%)]" />
           <div className="absolute inset-0 opacity-35 [background:repeating-linear-gradient(115deg,rgba(255,255,255,0.08)_0px,rgba(255,255,255,0.08)_1px,transparent_1px,transparent_18px)]" />
           <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-fuchsia-400/20 blur-3xl" />
         </div>
-        <div className="relative mx-auto max-w-6xl px-6 py-12 md:px-12 md:py-16">
+        <div className="relative mx-auto max-w-6xl px-6 py-6 md:px-12 md:py-8">
 
             <div className="relative grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
               <div className="lg:col-span-7">
@@ -116,7 +125,7 @@ export default function ProductsPage() {
                   </span>
                 </h3>
                 <p className="mt-5 max-w-[44ch] break-words text-sm leading-relaxed text-white/80 md:text-lg">
-                  We got it cover with our unique <span className="text-[1.14em] font-bold text-white">Promotional Products</span> you can find nowhere else, to know more contact us and ask for the not-usual products, we provide you with a unique collection of creatively customised marketing and packaging products.
+                  We got it covered with our unique <span className="text-[1.14em] font-bold text-white">Promotional Products</span> that you can find nowhere else, to know more contact us and ask for the <span className="text-[1em] font-bold text-white">Not-Usual Products,</span> we provide you with a unique collection of creatively customised marketing and packaging products.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.22em] md:text-sm">
                   <span className="text-cyan-100">Unexpected</span>
@@ -174,7 +183,7 @@ export default function ProductsPage() {
                         Access Side
                       </p>
                       <div>
-                        <p className="text-3xl font-black uppercase leading-tight text-white md:text-4xl">
+                      <p className="text-3xl font-black uppercase leading-tight text-white md:text-4xl">
                           Contact
                           <br />
                           To Unlock
@@ -183,6 +192,8 @@ export default function ProductsPage() {
                           Shhh! Mention the secret code <span className="font-bold text-cyan-200">Not-Usual</span> with us to find more.
                         </p>
                       </div>
+                      <p className="text-sm font-semibold text-white md:hidden">Tap to unlock</p>
+                      <p className="hidden text-sm font-semibold text-white md:block">Hover to unlock</p>
                       <p className="text-[10px] uppercase tracking-[0.35em] text-white/55">
                         Ellora Press // Private Collection
                       </p>
@@ -338,7 +349,7 @@ export default function ProductsPage() {
                   >
                     <div className="aspect-[3/4] overflow-hidden rounded-2xl border border-black/15 shadow-2xl dark:border-white/15">
                       <Image
-                        src="/products/dm-1.svg"
+                        src={isDark ? "/products/dm-1-dark.svg" : "/products/dm-1.svg"}
                         alt="Instagram post marketing visual"
                         width={860}
                         height={1080}
@@ -353,7 +364,7 @@ export default function ProductsPage() {
                   >
                     <div className="aspect-[3/4] overflow-hidden rounded-2xl border border-black/15 shadow-2xl dark:border-white/15">
                       <Image
-                        src="/products/dm-2.svg"
+                        src={isDark ? "/products/dm-2-dark.svg" : "/products/dm-2.svg"}
                         alt="Facebook reels campaign visual"
                         width={860}
                         height={1080}
@@ -368,7 +379,7 @@ export default function ProductsPage() {
                   >
                     <div className="aspect-[3/4] overflow-hidden rounded-2xl border border-black/15 shadow-[0_20px_60px_rgba(0,0,0,0.25)] dark:border-white/15">
                       <Image
-                        src="/products/dm-2.png"
+                        src={isDark ? "/products/dm-2.webp" : "/products/dm-2.png"}
                         alt="Ad creative strategy board visual"
                         width={1000}
                         height={760}

@@ -125,6 +125,18 @@
   animation-direction: var(--animation-direction, forwards);
 }
 
+@media (max-width: 767px) and (hover: none) {
+  .mobile-logo-highlight {
+    opacity: 0.55;
+    filter: grayscale(1);
+  }
+
+  .mobile-logo-highlight[data-center-active="true"] {
+    opacity: 1;
+    filter: grayscale(0);
+  }
+}
+
 .smooth-scroll {
   -webkit-overflow-scrolling: touch;
 }

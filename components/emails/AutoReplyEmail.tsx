@@ -9,13 +9,23 @@
         <Head />
         <Body style={{ fontFamily: 'Inter, Arial, sans-serif', backgroundColor: '#f4f4f4', padding: '0' }}>
         
-        {/* Black Header Banner */}
-        <Section style={{ backgroundColor: '#000000', padding: '40px 0', textAlign: 'center' }}>
-            <Img src={logoUrl} alt="Ellora Press" width="160" style={{ margin: '0 auto' }} />
-            <Text style={{ color: '#ffffff', fontSize: '22px', fontWeight: 'bold', margin: '15px 0 0 0' }}>
-            <span style={{ fontWeight: 800 }}>Ellora</span> 
-            <span style={{ fontWeight: 400 }}>Press</span>
-            </Text>
+        {/* Full-width logo only (no extra banner background/container styling) */}
+        <Section style={{ padding: '0', margin: '0', lineHeight: '0' }}>
+            <Img
+              src={logoUrl}
+              alt=""
+              width="600"
+              style={{
+                width: '100%',
+                maxWidth: '600px',
+                height: 'auto',
+                display: 'block',
+                margin: '0 auto',
+                border: '0',
+                outline: 'none',
+                textDecoration: 'none',
+              }}
+            />
         </Section>
 
         <Container style={{ backgroundColor: '#ffffff', padding: '40px', maxWidth: '600px', borderRadius: '8px' }}>
@@ -47,13 +57,19 @@
             <Heading style={{ color: '#fff', fontSize: '18px', marginTop: 0 }}>Design File Guidelines</Heading>
             <Text style={{ color: '#ccc', fontSize: '14px', marginBottom: '20px' }}>Ensure your files meet these standards for optimal print quality:</Text>
             <Row>
-                <Column style={{ width: '50%' }}>
-                <Text style={{ color: '#fff', fontSize: '13px', margin: '5px 0' }}>✦ 300 DPI Resolution</Text>
-                <Text style={{ color: '#fff', fontSize: '13px', margin: '5px 0' }}>✦ CMYK Color Mode</Text>
+                <Column style={{ width: '50%', paddingRight: '8px' }}>
+                <Text style={{ color: '#fff', fontSize: '12px', lineHeight: '18px', margin: '6px 0', whiteSpace: 'nowrap' }}>✦ 300 DPI</Text>
                 </Column>
-                <Column style={{ width: '50%' }}>
-                <Text style={{ color: '#fff', fontSize: '13px', margin: '5px 0' }}>✦ 3mm Bleed</Text>
-                <Text style={{ color: '#fff', fontSize: '13px', margin: '5px 0' }}>✦ Outlined Fonts</Text>
+                <Column style={{ width: '50%', paddingLeft: '8px' }}>
+                <Text style={{ color: '#fff', fontSize: '12px', lineHeight: '18px', margin: '6px 0', whiteSpace: 'nowrap' }}>✦ 3mm Bleed</Text>
+                </Column>
+            </Row>
+            <Row>
+                <Column style={{ width: '50%', paddingRight: '8px' }}>
+                <Text style={{ color: '#fff', fontSize: '12px', lineHeight: '18px', margin: '6px 0', whiteSpace: 'nowrap' }}>✦ CMYK Mode</Text>
+                </Column>
+                <Column style={{ width: '50%', paddingLeft: '8px' }}>
+                <Text style={{ color: '#fff', fontSize: '12px', lineHeight: '18px', margin: '6px 0', whiteSpace: 'nowrap' }}>✦ Outlined Fonts</Text>
                 </Column>
             </Row>
             </Section>

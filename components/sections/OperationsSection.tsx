@@ -11,7 +11,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Image from "next/image";
 
 type Capability = {
@@ -32,7 +32,7 @@ const CAPABILITIES: Capability[] = [
       "Own machinery and all-in-house facilities keep quality and timelines under direct operational control.",
     points: ["Press to finishing", "Single-facility workflow"],
     icon: Factory,
-    image: "/mitsubishi-for-website.png",
+    image: "/mitsubishi-for-website.webp",
     imagePosition: "52% 54%",
   },
   {
@@ -42,7 +42,7 @@ const CAPABILITIES: Capability[] = [
       "Out-of-the-box development for luxury and premium requirements with practical manufacturability.",
     points: ["Unique concepts", "Premium product builds"],
     icon: Sparkles,
-    image: "/operations-section/1.png",
+    image: "/operations-section/1.webp",
     imagePosition: "56% 50%",
   },
   {
@@ -52,7 +52,7 @@ const CAPABILITIES: Capability[] = [
       "Manual inspection checkpoints verify color, registration, and finishing consistency before dispatch.",
     points: ["Manual checks", "Dispatch gate"],
     icon: ShieldCheck,
-    image: "/operations-section/2.png",
+    image: "/operations-section/2.webp",
     imagePosition: "54% 60%",
   },
   {
@@ -62,7 +62,7 @@ const CAPABILITIES: Capability[] = [
       "Technical publication execution with modern software workflows and strong automobile industry experience.",
     points: ["Latest software", "Automobile documentation"],
     icon: BookOpenCheck,
-    image: "/operations-section/3.png",
+    image: "/operations-section/3.webp",
     imagePosition: "54% 50%",
   },
 ];
@@ -72,6 +72,13 @@ export default function OperationsSection() {
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const active = CAPABILITIES[activeIndex];
+
+  useEffect(() => {
+    CAPABILITIES.forEach(({ image }) => {
+      const img = new window.Image();
+      img.src = image;
+    });
+  }, []);
 
   useEffect(() => {
     if (!previewOpen) return;
@@ -91,7 +98,7 @@ export default function OperationsSection() {
   }, [previewOpen]);
 
   return (
-    <section className="snap-start h-[110svh] overflow-hidden border-t border-white/5 bg-background py-25 md:h-auto md:py-28">
+    <section className="snap-start border-t border-white/5 bg-background py-25 md:h-auto md:py-28">
       <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-4 md:px-6">
         <header className="mx-auto max-w-4xl text-center">
           <p className="font-mono text-[10px] uppercase tracking-[0.36em] text-foreground/45">Core Strengths</p>
@@ -103,7 +110,50 @@ export default function OperationsSection() {
           </p>
         </header>
 
-        <div className="mt-8 grid min-h-0 flex-1 items-start gap-0 md:mt-12 md:gap-10 lg:mt-14 lg:grid-cols-[1.05fr_1fr]">
+        <div className="mt-8 grid min-h-0 items-start gap-5 md:mt-12 md:flex-1 md:gap-10 lg:mt-14 lg:grid-cols-[1.05fr_1fr]">
+          <div className="min-h-0 lg:pt-1">
+            <div className="hidden">
+              <p className="text-sm leading-relaxed text-neutral-400">{active.description}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
+              className="group relative w-full overflow-hidden rounded-2xl border border-white/10 bg-foreground/[0.03] text-left"
+              aria-label="Open facility image preview"
+            >
+              <div className="relative h-[180px] w-full md:h-[420px]">
+                {CAPABILITIES.map((item, index) => {
+                  const isActive = index === activeIndex;
+                  return (
+                    <div
+                      key={item.label}
+                      className={`absolute inset-0 transition-opacity duration-300 ease-out will-change-[opacity] ${
+                        isActive ? "opacity-100" : "opacity-0"
+                      }`}
+                      aria-hidden={!isActive}
+                    >
+                      <Image
+                        src={item.image}
+                        alt={`${item.title} visual`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 720px"
+                        className="object-cover object-center md:[object-position:var(--desktop-object-position)]"
+                        style={{ "--desktop-object-position": item.imagePosition } as CSSProperties}
+                        quality={80}
+                        priority
+                        loading="eager"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-transparent" />
+              <span className="pointer-events-none absolute bottom-3 left-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white/90 backdrop-blur-sm">
+                <Maximize2 className="h-4 w-4" />
+              </span>
+            </button>
+          </div>
+
           <div className="border-y border-white/10">
             {CAPABILITIES.map((item, index) => {
               const isActive = index === activeIndex;
@@ -131,69 +181,26 @@ export default function OperationsSection() {
                     )}
                   </button>
 
-                  <AnimatePresence initial={false}>
-                    {isActive && (
-                      <motion.div
-                        id={`capability-panel-${index}`}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="overflow-hidden pb-4"
-                      >
-                        <p className="max-w-[95%] text-base leading-relaxed text-neutral-400 md:text-[18px]">
-                          {item.description}
+                  <div
+                    id={`capability-panel-${index}`}
+                    className={`overflow-hidden transition-[max-height,opacity,margin,padding] duration-300 ease-out ${
+                      isActive ? "max-h-64 opacity-100 pb-4" : "max-h-0 opacity-0 pb-0"
+                    }`}
+                  >
+                    <p className="max-w-[95%] text-base leading-relaxed text-neutral-400 md:text-[18px]">
+                      {item.description}
+                    </p>
+                    <div className="mt-3 space-y-1.5">
+                      {item.points.map((point) => (
+                        <p key={point} className="text-sm text-neutral-400 md:text-[15px]">
+                          {point}
                         </p>
-                        <div className="mt-3 space-y-1.5">
-                          {item.points.map((point) => (
-                            <p key={point} className="text-sm text-neutral-400 md:text-[15px]">
-                              {point}
-                            </p>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               );
             })}
-          </div>
-
-          <div className="min-h-0 lg:pt-1">
-            <div className="hidden">
-              <p className="text-sm leading-relaxed text-neutral-400">{active.description}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPreviewOpen(true)}
-              className="group relative w-full overflow-hidden rounded-2xl border border-white/10 bg-foreground/[0.03] text-left"
-              aria-label="Open facility image preview"
-            >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active.label}
-                  initial={{ opacity: 0.45, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0.45, scale: 1.02 }}
-                  transition={{ duration: 0.24, ease: "easeOut" }}
-                  className="relative h-[180px] w-full md:h-[420px]"
-                >
-                  <Image
-                    src={active.image}
-                    alt={`${active.title} visual`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 720px"
-                    className="object-cover"
-                    style={{ objectPosition: active.imagePosition }}
-                    quality={80}
-                  />
-                </motion.div>
-              </AnimatePresence>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-transparent" />
-              <span className="pointer-events-none absolute bottom-3 left-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white/90 backdrop-blur-sm">
-                <Maximize2 className="h-4 w-4" />
-              </span>
-            </button>
           </div>
         </div>
       </div>

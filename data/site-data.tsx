@@ -13,10 +13,10 @@ export const PRODUCT_DATA = [
     category: "Books & Publications",
     tagline: "Ideal for educational institutions and publishers.",
     items: [
-      { name: "Owner's Manuals", img: "/products/user-manual.png" },
-      { name: "Magazines", img: "/products/magazine.png" },
-      { name: "Notebooks", img: "/products/notebook.png" },
-      { name: "Textbooks", img: "/products/textbook-v2.png" },
+      { name: "Owner's Manuals", img: "/products/user-manual.webp" },
+      { name: "Magazines", img: "/products/magazine.webp" },
+      { name: "Notebooks", img: "/products/notebook.webp" },
+      { name: "Textbooks", img: "/products/textbook-v2.webp" },
     ],
   },
   {
@@ -25,10 +25,10 @@ export const PRODUCT_DATA = [
     category: "Packaging & Bulk Print Materials",
     tagline: "Optimized for large quantities and unit-cost efficiency.",
     items: [
-      { name: "Labels", img: "/products/labels.png" },
-      { name: "Cartons", img: "/products/carton.png" },
-      { name: "Inserts & Tags", img: "/products/tags.png" },
-      { name: "Instruction Manuals", img: "/products/instruction.png" },
+      { name: "Labels", img: "/products/labels.webp" },
+      { name: "Cartons", img: "/products/carton.webp" },
+      { name: "Inserts & Tags", img: "/products/tags.webp" },
+      { name: "Instruction Manuals", img: "/products/instruction.webp" },
     ],
   },
   {
@@ -38,10 +38,10 @@ export const PRODUCT_DATA = [
     tagline: "Designed for consistency and long-term usage.",
     items: [
       
-      { name: "Envelopes", img: "/products/envelope.png" },
-      { name: "Letterheads", img: "/products/letterhead.png" },
-      { name: "Annual Reports", img: "/products/annual-report.png" },
-      { name: "Training Manuals", img: "/products/training-manuals.png" },
+      { name: "Envelopes", img: "/products/envelope.webp" },
+      { name: "Letterheads", img: "/products/letterhead.webp" },
+      { name: "Annual Reports", img: "/products/annual-report.webp" },
+      { name: "Training Manuals", img: "/products/training-manuals.webp" },
     ],
   },
   {
@@ -50,10 +50,10 @@ export const PRODUCT_DATA = [
     category: "Marketing & Promotional Prints",
     tagline: "Best for campaigns, promotions, and brand communication.",
     items: [
-      { name: "Brochures", img: "/products/brochure.png" },
-      { name: "Flyers & Leaflets", img: "/products/flyer.png" },
-      { name: "Catalogs", img: "/products/catalog.png" },
-      { name: "Calendars", img: "/products/calendars.png" },
+      { name: "Brochures", img: "/products/brochure.webp" },
+      { name: "Flyers & Leaflets", img: "/products/flyer.webp" },
+      { name: "Catalogs", img: "/products/catalog.webp" },
+      { name: "Calendars", img: "/products/calendars.webp" },
     ],
   },
 ];

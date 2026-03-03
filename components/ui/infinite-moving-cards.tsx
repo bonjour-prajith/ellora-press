@@ -17,6 +17,7 @@ export const InfiniteMovingCards = ({
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLUListElement>(null);
+  const activeLogoRef = React.useRef<HTMLImageElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [start, setStart] = useState(false);
 
@@ -32,7 +33,7 @@ export const InfiniteMovingCards = ({
         });
       }
 
-      const duration = speed === "fast" ? "30s" : speed === "normal" ? "60s" : "100s";
+      const duration = speed === "fast" ? "24s" : speed === "normal" ? "50s" : "85s";
       containerRef.current.style.setProperty("--animation-duration", duration);
       containerRef.current.style.setProperty("--animation-direction", direction === "left" ? "forwards" : "reverse");
       
@@ -51,6 +52,89 @@ export const InfiniteMovingCards = ({
       return () => clearTimeout(timer);
     }
   }, [mounted, addAnimation]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const scroller = scrollerRef.current;
+    if (!container || !scroller || !mounted || !start || typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(max-width: 767px) and (hover: none)");
+    let rafId: number | null = null;
+    const switchThresholdPx = 12;
+
+    const clearActive = () => {
+      if (activeLogoRef.current) {
+        delete activeLogoRef.current.dataset.centerActive;
+        activeLogoRef.current = null;
+      }
+    };
+
+    const tick = () => {
+      if (!mediaQuery.matches) {
+        clearActive();
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const logos = scroller.querySelectorAll<HTMLImageElement>(".mobile-logo-highlight");
+      if (!logos.length) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const centerX = containerRect.left + containerRect.width / 2;
+      let closestLogo: HTMLImageElement | null = null;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      logos.forEach((logo) => {
+        const rect = logo.getBoundingClientRect();
+        const logoCenterX = rect.left + rect.width / 2;
+        const distance = Math.abs(centerX - logoCenterX);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestLogo = logo;
+        }
+      });
+
+      const currentActiveLogo = activeLogoRef.current;
+      const currentDistance = currentActiveLogo
+        ? Math.abs(
+            centerX -
+              (currentActiveLogo.getBoundingClientRect().left +
+                currentActiveLogo.getBoundingClientRect().width / 2)
+          )
+        : Number.POSITIVE_INFINITY;
+
+      const shouldSwitch =
+        !currentActiveLogo ||
+        (closestLogo !== currentActiveLogo && closestDistance + switchThresholdPx < currentDistance);
+
+      if (shouldSwitch) {
+        if (currentActiveLogo) {
+          delete currentActiveLogo.dataset.centerActive;
+        }
+
+        if (closestLogo) {
+          closestLogo.dataset.centerActive = "true";
+        }
+
+        activeLogoRef.current = closestLogo;
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      clearActive();
+    };
+  }, [mounted, start]);
 
   if (!mounted) return null;
 
@@ -72,15 +156,15 @@ export const InfiniteMovingCards = ({
         {items.map((item, idx) => (
           <li
             key={`${item.name}-${idx}`}
-            className="relative flex h-12 w-[92px] flex-shrink-0 items-center justify-center px-0 group sm:h-12 sm:w-[102px] md:h-auto md:w-auto md:px-4"
+            className="relative flex h-16 w-[116px] flex-shrink-0 items-center justify-center px-0 group sm:h-16 sm:w-[124px] md:h-auto md:w-auto md:px-4"
           >
             <Image
               src={item.src}
               alt={item.name}
-              width={200}
-              height={100}
-              sizes="(max-width: 768px) 92px, 200px"
-              className="block h-11 w-auto max-w-full scale-[1.16] object-contain transition-all duration-500 opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0 sm:h-11 sm:scale-[1.14] md:h-25 md:max-w-none md:scale-100"
+              width={280}
+              height={140}
+              sizes="(max-width: 768px) 160px, 280px"
+              className="mobile-logo-highlight block h-[3.75rem] w-auto max-w-full object-contain transition-all duration-500 opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0 sm:h-[3.75rem] md:h-25 md:max-w-none"
             />
           </li>
         ))}

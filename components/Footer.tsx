@@ -16,9 +16,9 @@ const footerLinks = {
     { name: "Terms", href: "#" },
   ],
   social: [
-    { name: "Twitter", href: "#" },
-    { name: "Instagram", href: "#" },
-    { name: "LinkedIn", href: "#" },
+    { name: "Twitter", href: "https://twitter.com/ellorapress" },
+    { name: "Instagram", href: "https://www.instagram.com/ellorapress/" },
+    { name: "LinkedIn", href: "https://www.linkedin.com/company/ellorapress" },
   ],
 };
 
@@ -74,7 +74,7 @@ const lottieRef = useRef<LottieRefCurrentProps>(null);
                 </div>
               </Link>
               <p className="mt-4 text-center md:text-centert text-neutral-400 max-w-xs text-sm leading-relaxed">
-                Building the next generation of printing experiences with precision and speed.
+                Building the next generation of printing experiences with innovation and speed.
               </p>
             </div>
 

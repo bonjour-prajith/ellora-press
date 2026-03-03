@@ -17,6 +17,8 @@ export const Navbar = ({ className }: { className?: string }) => {
   const pathname = usePathname();
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const loopPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRestartRef = useRef(false);
   const navLinks = [
     { name: "About", href: "/about" },
     { name: "Products", href: "/products" },
@@ -79,9 +81,75 @@ export const Navbar = ({ className }: { className?: string }) => {
     return () => clearInterval(interval);
   }, [mounted]);
 
-  const handleLoopComplete = () => {
-    lottieRef.current?.pause();
-    setTimeout(() => { lottieRef.current?.play(); }, 3000);
+  useEffect(() => {
+    return () => {
+      if (loopPauseTimeoutRef.current) {
+        clearTimeout(loopPauseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Re-sync logo animation after route changes.
+    lottieRef.current?.goToAndPlay(0, true);
+    pendingRestartRef.current = false;
+  }, [pathname]);
+
+  useEffect(() => {
+    const restartAnimation = () => {
+      lottieRef.current?.stop();
+      lottieRef.current?.goToAndPlay(0, true);
+      pendingRestartRef.current = false;
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        if (loopPauseTimeoutRef.current) {
+          clearTimeout(loopPauseTimeoutRef.current);
+          loopPauseTimeoutRef.current = null;
+        }
+        restartAnimation();
+      }
+    };
+
+    const handlePageShow = () => {
+      if (document.visibilityState === "visible") {
+        if (loopPauseTimeoutRef.current) {
+          clearTimeout(loopPauseTimeoutRef.current);
+          loopPauseTimeoutRef.current = null;
+        }
+        restartAnimation();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleVisibility);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleVisibility);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  const handleAnimationComplete = () => {
+    if (loopPauseTimeoutRef.current) {
+      clearTimeout(loopPauseTimeoutRef.current);
+    }
+
+    if (document.visibilityState !== "visible") {
+      pendingRestartRef.current = true;
+      return;
+    }
+
+    loopPauseTimeoutRef.current = setTimeout(() => {
+      if (document.visibilityState === "visible") {
+        lottieRef.current?.goToAndPlay(0, true);
+        pendingRestartRef.current = false;
+      } else {
+        pendingRestartRef.current = true;
+      }
+    }, 3000);
   };
 
   if (!mounted) return null;
@@ -112,21 +180,21 @@ export const Navbar = ({ className }: { className?: string }) => {
           {/* BRANDING SECTION */}
           <div className="flex items-center gap-2 md:gap-4">
             <Link href="/" className="flex items-center gap-1.5 md:gap-3 shrink-0 group">
-              <div className="w-10 h-10 md:w-15 md:h-15 overflow-hidden flex items-center justify-center pointer-events-none">
+              <div className="w-13 h-13 md:w-15 md:h-15 overflow-hidden flex items-center justify-center pointer-events-none">
                 <Lottie 
                   lottieRef={lottieRef}
                   animationData={logoAnimation}
-                  loop={true}
-                  onLoopComplete={handleLoopComplete}
+                  loop={false}
+                  onComplete={handleAnimationComplete}
                   className="absolute w-full h-full transform scale-[1.3] origin-center"
                 />
               </div>
               
               <div className="flex items-center gap-0.5 ml-1 h-[38px]">
-                <span className="text-lg md:text-3xl font-bold tracking-tight leading-none text-white">
+                <span className="text-2xl md:text-3xl font-bold tracking-tight leading-none text-white">
                   Ellora
                 </span>
-                <span className="text-lg md:text-3xl font-normal tracking-tight text-white">
+                <span className="text-2xl md:text-3xl font-normal tracking-tight text-white">
                   Press
                 </span>
               </div>

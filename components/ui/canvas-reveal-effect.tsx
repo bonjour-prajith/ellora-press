@@ -175,10 +175,11 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
       ${shader}
 
       fragColor = vec4(color, opacity);
-      fragColor.rgb *= fragColor.a;
+      // Keep color stable across mobile GPUs; avoid heavy premultiplied bloom artifacts.
+      fragColor.rgb *= clamp(fragColor.a, 0.0, 1.0);
         }`}
       uniforms={uniforms}
-      maxFps={120}
+      maxFps={60}
     />
   );
 };

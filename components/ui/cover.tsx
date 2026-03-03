@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useId, useState } from "react";
+import React, { useEffect, useId, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -8,9 +8,11 @@ import { SparklesCore } from "@/components/ui/sparkles";
 export const Cover = ({
   children,
   className,
+  disableHover = false,
 }: {
   children?: React.ReactNode;
   className?: string;
+  disableHover?: boolean;
 }) => {
   const [hovered, setHovered] = useState(false);
 
@@ -18,25 +20,41 @@ export const Cover = ({
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [beamPositions, setBeamPositions] = useState<number[]>([]);
+  const beamTimings = useMemo(
+    () =>
+      beamPositions.map((_, index) => ({
+        duration: 1 + ((index * 37) % 200) / 100,
+        delay: 1 + ((index * 53) % 200) / 100,
+      })),
+    [beamPositions]
+  );
 
   useEffect(() => {
-    if (ref.current) {
-      setContainerWidth(ref.current?.clientWidth ?? 0);
-
-      const height = ref.current?.clientHeight ?? 0;
+    const updateBeamLayout = () => {
+      if (!ref.current) return;
+      setContainerWidth(ref.current.clientWidth ?? 0);
+      const height = ref.current.clientHeight ?? 0;
       const numberOfBeams = Math.floor(height / 10); // Adjust the divisor to control the spacing
       const positions = Array.from(
         { length: numberOfBeams },
         (_, i) => (i + 1) * (height / (numberOfBeams + 1))
       );
       setBeamPositions(positions);
-    }
-  }, [ref.current]);
+    };
+
+    updateBeamLayout();
+    window.addEventListener("resize", updateBeamLayout);
+    return () => window.removeEventListener("resize", updateBeamLayout);
+  }, []);
 
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => {
+        if (!disableHover) setHovered(true);
+      }}
+      onMouseLeave={() => {
+        if (!disableHover) setHovered(false);
+      }}
       ref={ref}
       className="relative group/cover inline-block bg-neutral-900 px-2 py-2 transition duration-200 hover:bg-black dark:bg-neutral-900 dark:hover:bg-neutral-900 rounded-sm"
     >
@@ -90,8 +108,8 @@ export const Cover = ({
         <Beam
           key={index}
           hovered={hovered}
-          duration={Math.random() * 2 + 1}
-          delay={Math.random() * 2 + 1}
+          duration={beamTimings[index]?.duration}
+          delay={beamTimings[index]?.delay}
           width={containerWidth}
           style={{
             top: `${position}px`,
@@ -160,6 +178,13 @@ export const Beam = ({
   width?: number;
 } & React.ComponentProps<typeof motion.svg>) => {
   const id = useId();
+  const hoverTimings = useMemo(() => {
+    const seed = Array.from(id).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return {
+      delay: 0.2 + (seed % 80) / 100,
+      repeatDelay: 1 + (seed % 100) / 100,
+    };
+  }, [id]);
 
   return (
     <motion.svg
@@ -197,8 +222,8 @@ export const Beam = ({
             duration: hovered ? 0.5 : duration ?? 2,
             ease: "linear",
             repeat: Infinity,
-            delay: hovered ? Math.random() * (1 - 0.2) + 0.2 : 0,
-            repeatDelay: hovered ? Math.random() * (2 - 1) + 1 : delay ?? 1,
+            delay: hovered ? hoverTimings.delay : 0,
+            repeatDelay: hovered ? hoverTimings.repeatDelay : delay ?? 1,
           }}
         >
           <stop stopColor="#2EB9DF" stopOpacity="0" />

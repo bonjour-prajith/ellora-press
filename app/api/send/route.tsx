@@ -389,26 +389,37 @@ export async function POST(request: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
-    // 1. Send internal notification
-    await resend.emails.send({
-      from: 'Ellora Press <solutions@ellorapress.com>',
-      to: ['solutions@ellorapress.com'],
-      replyTo: email,
-      subject: '🚀 New Quote Request',
-      html: await render(<QuoteEmail email={email} details={details} />),
-    });
+    const internalEmailHtml = await render(<QuoteEmail email={email} details={details} />);
+    const autoReplyHtml = await render(<AutoReplyEmail />);
 
-    // 2. Send auto-reply to customer
-    await resend.emails.send({
-      from: 'Ellora Press <solutions@ellorapress.com>',
-      to: [email],
-      subject: 'We received your quote request',
-      html: await render(<AutoReplyEmail />),
-    });
+    const [internalSendResult, autoReplySendResult] = await Promise.all([
+      resend.emails.send({
+        from: 'Ellora Press <solutions@ellorapress.com>',
+        to: ['solutions@ellorapress.com'],
+        replyTo: email,
+        subject: '🚀 New Quote Request',
+        html: internalEmailHtml,
+      }),
+      resend.emails.send({
+        from: 'Ellora Press <solutions@ellorapress.com>',
+        to: [email],
+        subject: 'We received your quote request',
+        html: autoReplyHtml,
+      }),
+    ]);
+
+    if (internalSendResult.error) {
+      throw new Error(`Internal email failed: ${internalSendResult.error.message}`);
+    }
+    if (autoReplySendResult.error) {
+      throw new Error(`Auto-reply email failed: ${autoReplySendResult.error.message}`);
+    }
 
     logStructured('info', 'emails_sent', {
       requestId,
       clientIp,
+      internalMessageId: internalSendResult.data?.id ?? null,
+      autoReplyMessageId: autoReplySendResult.data?.id ?? null,
       durationMs: Number((performance.now() - startedAt).toFixed(1)),
     });
     return NextResponse.json(

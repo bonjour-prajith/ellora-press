@@ -105,6 +105,12 @@ export default function ContactPage() {
         return;
       }
 
+      if (result && result.message === "Request accepted.") {
+        setFormStatus("error");
+        setFormFeedback("Please retry once after clearing autofill. If it still fails, contact us directly.");
+        return;
+      }
+
       setFormStatus("success");
       setFormFeedback("Message sent. We will get back to you shortly.");
       setFormValues({
@@ -215,10 +221,12 @@ export default function ContactPage() {
 
                 <input
                   type="text"
-                  name="website"
+                  name="company_code"
                   value={formValues.website}
-                  onChange={handleInputChange}
-                  autoComplete="off"
+                  onChange={(event) =>
+                    setFormValues((previous) => ({ ...previous, website: event.target.value }))
+                  }
+                  autoComplete="new-password"
                   tabIndex={-1}
                   aria-hidden="true"
                   className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden opacity-0"

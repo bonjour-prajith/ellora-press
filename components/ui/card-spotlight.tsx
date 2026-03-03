@@ -43,7 +43,7 @@ export const CardSpotlight = ({
     clientX,
     clientY,
   }: ReactMouseEvent<HTMLDivElement>) {
-    let { left, top } = currentTarget.getBoundingClientRect();
+    const { left, top } = currentTarget.getBoundingClientRect();
 
     mouseX.set(clientX - left);
     mouseY.set(clientY - top);
@@ -107,7 +107,7 @@ export const CardSpotlight = ({
               <div className="absolute inset-0 dark:hidden">
                 <CanvasRevealEffect
                   animationSpeed={5}
-                  containerClassName="bg-transparent absolute inset-0 pointer-events-none [filter:saturate(1.25)_brightness(1.08)_contrast(1.06)]"
+                  containerClassName="bg-transparent absolute inset-0 pointer-events-none [filter:saturate(1.1)_brightness(1.02)_contrast(1.02)]"
                   colors={[
                     [59, 130, 246],
                     [139, 92, 246],
@@ -121,7 +121,7 @@ export const CardSpotlight = ({
               <div className="absolute inset-0 hidden dark:block">
                 <CanvasRevealEffect
                   animationSpeed={5}
-                  containerClassName="bg-transparent absolute inset-0 pointer-events-none [filter:saturate(1.25)_brightness(1.08)_contrast(1.06)]"
+                  containerClassName="bg-transparent absolute inset-0 pointer-events-none [filter:saturate(1.1)_brightness(1.02)_contrast(1.02)]"
                   colors={[
                     [59, 130, 246],
                     [139, 92, 246],
@@ -136,7 +136,7 @@ export const CardSpotlight = ({
           ) : (
             <CanvasRevealEffect
               animationSpeed={5}
-              containerClassName="bg-transparent absolute inset-0 pointer-events-none [filter:saturate(1.45)_brightness(1.16)_contrast(1.08)]"
+              containerClassName="bg-transparent absolute inset-0 pointer-events-none [filter:saturate(1.1)_brightness(1.02)_contrast(1.02)]"
               colors={[
                 [59, 130, 246],
                 [139, 92, 246],

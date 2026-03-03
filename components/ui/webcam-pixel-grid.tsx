@@ -50,6 +50,15 @@ type PixelData = {
   currentElevation: number;
 };
 
+const createPixel = (): PixelData => ({
+  r: 30,
+  g: 30,
+  b: 30,
+  motion: 0,
+  targetElevation: 0,
+  currentElevation: 0,
+});
+
 export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
   gridCols = 64,
   gridRows = 48,
@@ -77,8 +86,6 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
   const pixelDataRef = useRef<PixelData[][]>([]);
   const animationRef = useRef<number>(0);
   const [isReady, setIsReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showErrorPopup, setShowErrorPopup] = useState(true);
 
   // Parse monochrome color
   const monoRGB = React.useMemo(() => {
@@ -103,19 +110,16 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
   // Initialize pixel data
   useEffect(() => {
     pixelDataRef.current = Array.from({ length: gridRows }, () =>
-      Array.from({ length: gridCols }, () => ({
-        r: 30,
-        g: 30,
-        b: 30,
-        motion: 0,
-        targetElevation: 0,
-        currentElevation: 0,
-      }))
+      Array.from({ length: gridCols }, createPixel)
     );
   }, [gridCols, gridRows]);
 
   const streamRef = useRef<MediaStream | null>(null);
   const ownsStreamRef = useRef(false);
+  const activeGridSizeRef = useRef<{ cols: number; rows: number }>({
+    cols: gridCols,
+    rows: gridRows,
+  });
 
   // Request camera access
   const requestCameraAccess = useCallback(async () => {
@@ -171,14 +175,11 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
         }
 
         setIsReady(true);
-        setError(null);
-        setShowErrorPopup(false);
         onWebcamReady?.();
       }
     } catch (err) {
       const error =
         err instanceof Error ? err : new Error("Webcam access denied");
-      setError(error.message);
       onWebcamError?.(error);
     }
   }, [initialStream, onWebcamError, onWebcamReady]);
@@ -195,13 +196,13 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
   }, [requestCameraAccess]);
 
   // Main render loop
-  const render = useCallback(() => {
+  const render = useCallback(function renderFrame() {
     const video = videoRef.current;
     const processingCanvas = processingCanvasRef.current;
     const displayCanvas = displayCanvasRef.current;
 
     if (!video || !processingCanvas || !displayCanvas || video.readyState < 2) {
-      animationRef.current = requestAnimationFrame(render);
+      animationRef.current = requestAnimationFrame(renderFrame);
       return;
     }
 
@@ -211,39 +212,88 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
     const dispCtx = displayCanvas.getContext("2d");
 
     if (!procCtx || !dispCtx) {
-      animationRef.current = requestAnimationFrame(render);
+      animationRef.current = requestAnimationFrame(renderFrame);
       return;
     }
 
-    // Set processing canvas size to grid dimensions
-    processingCanvas.width = gridCols;
-    processingCanvas.height = gridRows;
+    // Adapt processing grid to camera aspect to avoid mobile zoom/crop from fixed ratios.
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    const fallbackAspect = gridCols / gridRows;
+    const sourceAspect = videoWidth > 0 && videoHeight > 0 ? videoWidth / videoHeight : fallbackAspect;
 
-    // Draw video to processing canvas (scaled down)
+    const targetCellCount = Math.max(1, gridCols * gridRows);
+    const adaptedCols = Math.max(1, Math.round(Math.sqrt(targetCellCount * sourceAspect)));
+    const adaptedRows = Math.max(1, Math.round(targetCellCount / adaptedCols));
+    const hasGridSizeChanged =
+      activeGridSizeRef.current.cols !== adaptedCols || activeGridSizeRef.current.rows !== adaptedRows;
+
+    if (hasGridSizeChanged) {
+      activeGridSizeRef.current = { cols: adaptedCols, rows: adaptedRows };
+      previousFrameRef.current = null;
+      pixelDataRef.current = Array.from({ length: adaptedRows }, () =>
+        Array.from({ length: adaptedCols }, createPixel)
+      );
+    }
+
+    const activeCols = activeGridSizeRef.current.cols;
+    const activeRows = activeGridSizeRef.current.rows;
+
+    // Set processing canvas size to active grid dimensions
+    processingCanvas.width = activeCols;
+    processingCanvas.height = activeRows;
+
+    // Draw video to processing canvas using an aspect-preserving crop.
+    const targetAspect = activeCols / activeRows;
+
+    let sourceX = 0;
+    let sourceY = 0;
+    let sourceWidth = videoWidth || activeCols;
+    let sourceHeight = videoHeight || activeRows;
+
+    if (sourceAspect > targetAspect) {
+      sourceWidth = sourceHeight * targetAspect;
+      sourceX = (videoWidth - sourceWidth) / 2;
+    } else if (sourceAspect < targetAspect) {
+      sourceHeight = sourceWidth / targetAspect;
+      sourceY = (videoHeight - sourceHeight) / 2;
+    }
+
     procCtx.save();
     if (mirror) {
+      procCtx.translate(activeCols, 0);
       procCtx.scale(-1, 1);
-      procCtx.drawImage(video, -gridCols, 0, gridCols, gridRows);
-    } else {
-      procCtx.drawImage(video, 0, 0, gridCols, gridRows);
     }
+    procCtx.drawImage(
+      video,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      activeCols,
+      activeRows
+    );
     procCtx.restore();
 
     // Get pixel data
-    const imageData = procCtx.getImageData(0, 0, gridCols, gridRows);
+    const imageData = procCtx.getImageData(0, 0, activeCols, activeRows);
     const currentData = imageData.data;
     const previousData = previousFrameRef.current;
 
     // Update pixel data with motion detection
-    const pixels = pixelDataRef.current;
-    for (let row = 0; row < gridRows; row++) {
-      for (let col = 0; col < gridCols; col++) {
-        const idx = (row * gridCols + col) * 4;
+    const nextPixels = pixelDataRef.current.map((row) =>
+      row.map((pixel) => ({ ...pixel }))
+    );
+    for (let row = 0; row < activeRows; row++) {
+      for (let col = 0; col < activeCols; col++) {
+        const idx = (row * activeCols + col) * 4;
         const r = currentData[idx];
         const g = currentData[idx + 1];
         const b = currentData[idx + 2];
 
-        const pixel = pixels[row]?.[col];
+        const pixel = nextPixels[row]?.[col];
         if (!pixel) continue;
 
         // Calculate motion
@@ -300,6 +350,8 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
       }
     }
 
+    pixelDataRef.current = nextPixels;
+
     // Store current frame for next comparison
     previousFrameRef.current = new Uint8ClampedArray(currentData);
 
@@ -317,19 +369,19 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
     dispCtx.fillRect(0, 0, displayWidth, displayHeight);
 
     // Calculate cell size (always square, cover entire container like object-fit: cover)
-    const cellSize = Math.max(displayWidth / gridCols, displayHeight / gridRows);
+    const cellSize = Math.max(displayWidth / activeCols, displayHeight / activeRows);
     const gap = cellSize * gapRatio;
 
     // Calculate offset to center the grid (negative offset for overflow, creating cover effect)
-    const gridWidth = cellSize * gridCols;
-    const gridHeight = cellSize * gridRows;
+    const gridWidth = cellSize * activeCols;
+    const gridHeight = cellSize * activeRows;
     const offsetXGrid = (displayWidth - gridWidth) / 2;
     const offsetYGrid = (displayHeight - gridHeight) / 2;
 
     // Draw cells with 3D effect
-    for (let row = 0; row < gridRows; row++) {
-      for (let col = 0; col < gridCols; col++) {
-        const pixel = pixels[row]?.[col];
+    for (let row = 0; row < activeRows; row++) {
+      for (let col = 0; col < activeCols; col++) {
+        const pixel = nextPixels[row]?.[col];
         if (!pixel) continue;
 
         const x = offsetXGrid + col * cellSize;
@@ -396,7 +448,7 @@ export const WebcamPixelGrid: React.FC<WebcamPixelGridProps> = ({
       }
     }
 
-    animationRef.current = requestAnimationFrame(render);
+    animationRef.current = requestAnimationFrame(renderFrame);
   }, [
     gridCols,
     gridRows,

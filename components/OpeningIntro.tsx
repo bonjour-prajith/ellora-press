@@ -97,15 +97,15 @@ export default function OpeningIntro() {
           }}
         >
           <div className="absolute inset-0 bg-black" />
-          <div className="relative z-10 flex -translate-x-5 items-center justify-center md:-translate-x-13 -translate-y-8">
+          <div className="relative z-10 flex -translate-y-5 flex-col items-center justify-center md:-translate-x-13 md:-translate-y-8 md:flex-row">
             <motion.div
-              className="relative flex items-center"
+              className="relative flex flex-col items-center md:flex-row"
               initial={false}
               animate={{ scale: 1 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
               <motion.div
-                className="relative z-10 h-40 w-40 md:h-52 md:w-52"
+                className="relative z-10 h-44 w-44 md:h-52 md:w-52"
                 initial={{ opacity: 0, scale: 0.96, filter: "blur(10px)" }}
                 animate={{ x: 0, scale: 1, opacity: 1, filter: "blur(0px)" }}
                 transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
@@ -121,7 +121,7 @@ export default function OpeningIntro() {
               </motion.div>
 
               <motion.div
-                className="ml-[-14px] flex flex-col items-center overflow-hidden md:ml-[-20px]"
+                className="-mt-5 flex flex-col items-center overflow-hidden md:mt-0 md:ml-[-20px]"
                 initial={false}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
@@ -142,7 +142,7 @@ export default function OpeningIntro() {
                 >
                   <div className="flex items-end gap-0.5">
                     <motion.span
-                      className="block whitespace-nowrap text-5xl font-bold tracking-tight text-white md:text-7xl"
+                      className="block whitespace-nowrap text-6xl font-bold tracking-tight text-white md:text-7xl"
                       initial={{ x: -10, y: 3, opacity: 0, filter: "blur(12px) brightness(0.7)" }}
                       animate={
                         elloraVisible
@@ -158,7 +158,7 @@ export default function OpeningIntro() {
                       Ellora
                     </motion.span>
                     <motion.span
-                      className="block whitespace-nowrap text-5xl font-normal tracking-tight text-white md:text-7xl"
+                      className="block whitespace-nowrap text-6xl font-normal tracking-tight text-white md:text-7xl"
                       initial={{ x: -10, y: 3, opacity: 0, filter: "blur(12px) brightness(0.7)" }}
                       animate={
                         elloraVisible
@@ -191,7 +191,7 @@ export default function OpeningIntro() {
                   />
                 </motion.div>
                 <motion.div
-                  className="relative mt-0.5 overflow-hidden md:mt-1"
+                  className="relative mt-2 overflow-hidden md:mt-1"
                   initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
                   animate={
                     estdVisible
@@ -205,7 +205,7 @@ export default function OpeningIntro() {
                   }}
                 >
                   <motion.span
-                    className="block text-[10px] font-mono uppercase tracking-[0.34em] text-white/65 md:text-xs md:tracking-[0.42em]"
+                    className="block text-xs font-mono uppercase tracking-[0.34em] text-white/65 md:text-xs md:tracking-[0.42em]"
                     initial={{ x: -8, y: 2, opacity: 0, filter: "blur(8px) brightness(0.75)" }}
                     animate={
                       estdVisible

@@ -16,6 +16,7 @@ export const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       const timer = setTimeout(() => {
         setIsSubmitted(false);
         setEmail("");
+        setDetails("");
         setSubmitError("");
         setIsSubmitting(false);
       }, 300); 
@@ -55,7 +56,7 @@ export const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       // 4. Close the modal after a delay
       setTimeout(() => {
         onClose();
-      }, 3000);
+      }, 2200);
     } else {
       const errorData = await response.json().catch(() => null);
       const message =
@@ -119,7 +120,22 @@ export const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             </button>
 
             <AnimatePresence mode="wait">
-              {!isSubmitted ? (
+              {isSubmitted ? (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center py-10 text-center relative z-10"
+                >
+                  <div className="h-24 w-24 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-6 shadow-inner backdrop-blur-xl">
+                     <Check size={48} strokeWidth={3} />
+                  </div>
+                  <h2 className="text-3xl font-bold tracking-tight mb-2 text-neutral-900 dark:text-white">Request Received!</h2>
+                  <p className="text-neutral-600 dark:text-neutral-300 max-w-[250px]">
+                    We&apos;ve received your details and will contact you shortly.
+                  </p>
+                </motion.div>
+              ) : (
                 <motion.div
                   key="form"
                   className="relative z-10"
@@ -147,7 +163,7 @@ export const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         autoComplete="email"
                         inputMode="email"
                         aria-describedby={submitError ? "quote-modal-feedback" : undefined}
-                        className="h-12 w-full rounded-full border border-white/40 bg-white/40 px-5 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-500 focus:ring-2 focus:ring-purple-500/30 dark:border-white/10 dark:bg-black/20 dark:text-white sm:h-14 sm:px-8"
+                        className="h-12 w-full rounded-full border border-white/40 bg-white/40 px-5 text-[16px] text-neutral-900 outline-none transition-all placeholder:text-neutral-500 focus:ring-2 focus:ring-purple-500/30 dark:border-white/10 dark:bg-black/20 dark:text-white sm:h-14 sm:px-8 sm:text-base"
                       />
                     </div>
 
@@ -171,27 +187,7 @@ export const QuoteModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         {submitError}
                       </p>
                     ) : null}
-                    {isSubmitting ? (
-                      <p className="sr-only" role="status" aria-live="polite">
-                        Sending your request.
-                      </p>
-                    ) : null}
                   </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center py-10 text-center relative z-10"
-                >
-                  <div className="h-24 w-24 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-6 shadow-inner backdrop-blur-xl">
-                     <Check size={48} strokeWidth={3} />
-                  </div>
-                  <h2 className="text-3xl font-bold tracking-tight mb-2 text-neutral-900 dark:text-white">Request Received!</h2>
-                  <p className="text-neutral-600 dark:text-neutral-300 max-w-[250px]">
-                    We've received your details and will contact you shortly.
-                  </p>
                 </motion.div>
               )}
             </AnimatePresence>

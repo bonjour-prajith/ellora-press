@@ -232,7 +232,9 @@ export const WhyUsSection = () => {
     null
   );
   const [isMobileInteraction, setIsMobileInteraction] = useState(false);
+  const [isTabletLayout, setIsTabletLayout] = useState(false);
   const hoverEnabled = !isMobileInteraction;
+  const sectionRef = React.useRef<HTMLElement | null>(null);
   const cardRefs = React.useRef<Record<string, HTMLElement | null>>({});
   const visibleRatiosRef = React.useRef<Record<string, number>>({});
   const badgeRef = React.useRef<HTMLDivElement | null>(null);
@@ -240,10 +242,19 @@ export const WhyUsSection = () => {
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px), (pointer: coarse)");
+    const tabletMedia = window.matchMedia(
+      "(min-width: 768px) and (max-width: 1199px)"
+    );
     const updateMode = () => setIsMobileInteraction(media.matches);
+    const updateTabletMode = () => setIsTabletLayout(tabletMedia.matches);
     updateMode();
+    updateTabletMode();
     media.addEventListener("change", updateMode);
-    return () => media.removeEventListener("change", updateMode);
+    tabletMedia.addEventListener("change", updateTabletMode);
+    return () => {
+      media.removeEventListener("change", updateMode);
+      tabletMedia.removeEventListener("change", updateTabletMode);
+    };
   }, []);
 
   useEffect(() => {
@@ -254,7 +265,95 @@ export const WhyUsSection = () => {
   }, [isMobileInteraction]);
 
   useEffect(() => {
-    if (!isMobileInteraction) return;
+    if (!isMobileInteraction || !isTabletLayout) return;
+
+    const cardOrder = ["01", "02", "03", "04"] as const;
+    const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
+      if (!node) return window;
+      let parent: HTMLElement | null = node.parentElement;
+      while (parent) {
+        const style = window.getComputedStyle(parent);
+        const overflowY = style.overflowY;
+        if (
+          (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+          parent.scrollHeight > parent.clientHeight
+        ) {
+          return parent;
+        }
+        parent = parent.parentElement;
+      }
+      return window;
+    };
+
+    const scrollParent = getScrollParent(sectionRef.current);
+    const getScrollTop = () =>
+      scrollParent === window
+        ? window.scrollY || window.pageYOffset || 0
+        : (scrollParent as HTMLElement).scrollTop;
+
+    let lastScrollTop = getScrollTop();
+    let accumulatedDelta = 0;
+    const stepThreshold = 48;
+
+    setActiveCardId((current) => current ?? "01");
+
+    const updateFromScroll = () => {
+      const sectionEl = sectionRef.current;
+      if (!sectionEl) return;
+
+      const rect = sectionEl.getBoundingClientRect();
+      const viewportH = window.innerHeight || 1;
+      const isSectionEngaged =
+        rect.bottom > viewportH * 0.18 && rect.top < viewportH * 0.82;
+      if (!isSectionEngaged) {
+        lastScrollTop = getScrollTop();
+        accumulatedDelta = 0;
+        return;
+      }
+
+      const nextScrollTop = getScrollTop();
+      const delta = nextScrollTop - lastScrollTop;
+      lastScrollTop = nextScrollTop;
+
+      if (Math.abs(delta) < 1) return;
+      accumulatedDelta += delta;
+
+      if (Math.abs(accumulatedDelta) < stepThreshold) return;
+
+      const direction = accumulatedDelta > 0 ? 1 : -1;
+      accumulatedDelta = 0;
+
+      setActiveCardId((current) => {
+        const base = (current ?? "01") as (typeof cardOrder)[number];
+        const currentIndex = cardOrder.indexOf(base);
+        const safeIndex = currentIndex < 0 ? 0 : currentIndex;
+        const nextIndex = Math.max(
+          0,
+          Math.min(cardOrder.length - 1, safeIndex + direction)
+        );
+        return cardOrder[nextIndex];
+      });
+    };
+
+    const scrollTarget = scrollParent === window ? window : scrollParent;
+    scrollTarget.addEventListener("scroll", updateFromScroll, { passive: true });
+    window.addEventListener("resize", updateFromScroll);
+    return () => {
+      scrollTarget.removeEventListener("scroll", updateFromScroll);
+      window.removeEventListener("resize", updateFromScroll);
+    };
+  }, [isMobileInteraction, isTabletLayout]);
+
+  useEffect(() => {
+    if (!isMobileInteraction || isTabletLayout) return;
+
+    const observerThreshold = isTabletLayout
+      ? [0.35, 0.5, 0.65, 0.8, 0.92]
+      : [0.2, 0.35, 0.5, 0.65, 0.8, 0.92];
+    const observerRootMargin = isTabletLayout
+      ? "-35% 0px -35% 0px"
+      : "-24% 0px -24% 0px";
+    const switchDelta = isTabletLayout ? 0.18 : 0.12;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -281,14 +380,14 @@ export const WhyUsSection = () => {
           if (!current) return nextId;
           if (current === nextId) return current;
           const currentRatio = ratios[current] ?? 0;
-          if (nextRatio < currentRatio + 0.12) return current;
+          if (nextRatio < currentRatio + switchDelta) return current;
           return nextId;
         });
       },
       {
         root: null,
-        threshold: [0.2, 0.35, 0.5, 0.65, 0.8, 0.92],
-        rootMargin: "-24% 0px -24% 0px",
+        threshold: observerThreshold,
+        rootMargin: observerRootMargin,
       }
     );
 
@@ -297,10 +396,10 @@ export const WhyUsSection = () => {
     });
 
     return () => observer.disconnect();
-  }, [isMobileInteraction]);
+  }, [isMobileInteraction, isTabletLayout]);
 
   return (
-    <section className="relative overflow-hidden bg-zinc-50 py-24 dark:bg-black">
+    <section ref={sectionRef} className="relative overflow-hidden bg-zinc-50 py-24 dark:bg-black">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_10%,rgba(245,158,11,0.18),transparent_28%),radial-gradient(circle_at_86%_22%,rgba(219,39,119,0.15),transparent_30%),radial-gradient(circle_at_78%_82%,rgba(14,165,233,0.16),transparent_34%)] dark:bg-[radial-gradient(circle_at_12%_10%,rgba(245,158,11,0.08),transparent_28%),radial-gradient(circle_at_86%_22%,rgba(219,39,119,0.08),transparent_30%),radial-gradient(circle_at_78%_82%,rgba(14,165,233,0.08),transparent_34%)]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
@@ -395,6 +494,10 @@ export const WhyUsSection = () => {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {highlights.map((item, index) => {
             const isActive = activeCardId === item.id;
+            const isCardVisuallyActive = isActive;
+            const keepLightTextDark = ["prototype", "pantone", "logistics"].includes(
+              item.tone
+            );
             const cardBody = (
               <>
                 {item.tone !== "lock" ? (
@@ -426,7 +529,7 @@ export const WhyUsSection = () => {
                       className={cn(
                         "inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-black/10 px-2 text-[10px] font-bold tracking-[0.16em] text-zinc-700 dark:border-white/15 dark:text-zinc-300",
                         hoverEnabled && "md:group-hover/spotlight:border-white/20 md:group-hover/spotlight:text-zinc-300",
-                        isActive && "border-white/20 text-zinc-300"
+                        isCardVisuallyActive && "border-white/20 text-zinc-300"
                       )}
                     >
                       {item.id}
@@ -435,7 +538,7 @@ export const WhyUsSection = () => {
                       className={cn(
                         "grid h-7 w-7 place-items-center rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900",
                         hoverEnabled && "md:group-hover/spotlight:bg-zinc-100 md:group-hover/spotlight:text-zinc-900",
-                        isActive && "bg-zinc-100 text-zinc-900"
+                        isCardVisuallyActive && "bg-zinc-100 text-zinc-900"
                       )}
                     >
                       {item.icon}
@@ -445,8 +548,12 @@ export const WhyUsSection = () => {
                   <h3
                     className={cn(
                       "text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100",
-                      hoverEnabled && "md:group-hover/spotlight:text-zinc-100",
-                      isActive && "text-zinc-100"
+                      keepLightTextDark
+                        ? hoverEnabled && "md:dark:group-hover/spotlight:text-zinc-100"
+                        : hoverEnabled && "md:group-hover/spotlight:text-zinc-100",
+                      keepLightTextDark
+                        ? isCardVisuallyActive && "dark:text-zinc-100"
+                        : isCardVisuallyActive && "text-zinc-100"
                     )}
                   >
                     {item.title}
@@ -454,8 +561,12 @@ export const WhyUsSection = () => {
                   <p
                     className={cn(
                       "mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400",
-                      hoverEnabled && "md:group-hover/spotlight:text-zinc-400",
-                      isActive && "text-zinc-400"
+                      keepLightTextDark
+                        ? hoverEnabled && "md:dark:group-hover/spotlight:text-zinc-400"
+                        : hoverEnabled && "md:group-hover/spotlight:text-zinc-400",
+                      keepLightTextDark
+                        ? isCardVisuallyActive && "dark:text-zinc-400"
+                        : isCardVisuallyActive && "text-zinc-400"
                     )}
                   >
                     {item.description}
@@ -525,14 +636,18 @@ export const WhyUsSection = () => {
                     color="#262626"
                     lightColor="rgba(24, 24, 27, 0.72)"
                     lightModeTuned
-                    dotSize={4}
-                    pixelRefresh={5}
-                    pixelGrid={4}
+                    dotSize={3}
+                    pixelRefresh={6}
+                    pixelGrid={5}
                     hoverTracking={hoverEnabled}
                     fullActive={isMobileInteraction}
                     className={cn(
-                      "group !overflow-hidden !rounded-3xl !border !border-black/10 !bg-neutral-500/40 !p-5 !shadow-[0_20px_60px_-42px_rgba(0,0,0,0.5)] !backdrop-blur-lg !transition-colors !duration-300 dark:!border-white/10 dark:!bg-zinc-900/45",
-                      hoverEnabled && "hover:!bg-black/90 hover:!border-white/10"
+                      "group !overflow-hidden !rounded-3xl !border !border-black/10 !p-5 !shadow-[0_20px_60px_-42px_rgba(0,0,0,0.5)] !transition-colors !duration-300 dark:!border-white/10 dark:!bg-zinc-900/45",
+                      isMobileInteraction && isActive
+                        ? "!bg-black/90 !border-white/10"
+                        : "!bg-neutral-500/40",
+                      hoverEnabled && "hover:!bg-black/90 hover:!border-white/10",
+                      isActive && "!bg-black/90 !border-white/10"
                     )}
                   >
                     {cardBody}

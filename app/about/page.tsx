@@ -127,7 +127,7 @@ export default function AboutPage() {
             <div className="flex flex-col justify-end">
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
               <Image
-                src="/mitsubishi-for-website.png"
+                src="/mitsubishi-for-website.webp"
                 alt="In-house offset press machinery"
                 width={1200}
                 height={800}
