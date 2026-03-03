@@ -87,7 +87,7 @@ export const InfiniteMovingCards = ({
       let closestLogo: HTMLImageElement | null = null;
       let closestDistance = Number.POSITIVE_INFINITY;
 
-      logos.forEach((logo) => {
+      for (const logo of logos) {
         const rect = logo.getBoundingClientRect();
         const logoCenterX = rect.left + rect.width / 2;
         const distance = Math.abs(centerX - logoCenterX);
@@ -96,7 +96,7 @@ export const InfiniteMovingCards = ({
           closestDistance = distance;
           closestLogo = logo;
         }
-      });
+      }
 
       const currentActiveLogo = activeLogoRef.current;
       const currentDistance = currentActiveLogo
