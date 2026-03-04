@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ModeToggle } from "@/components/ModeToggle";
@@ -22,14 +21,27 @@ export const Navbar = ({ className }: { className?: string }) => {
   const navLinks = [
     { name: "About", href: "/about" },
     { name: "Products", href: "/products" },
+    { name: "Marketing", href: "/digital-marketing" },
+    { name: "Contact", href: "/contact" },
+  ];
+  const mobileNavLinks = [
+    { name: "About", href: "/about" },
+    { name: "Products", href: "/products" },
+    { name: "Marketing", href: "/digital-marketing" },
     { name: "Contact", href: "/contact" },
   ];
 
   useEffect(() => {
-    setMounted(true);
+    const mountTimer = window.setTimeout(() => setMounted(true), 0);
     const hideThreshold = pathname === "/" ? 1000 : 60;
 
     const handleScroll = () => {
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      if (isMobile) {
+        setIsVisible(true);
+        return;
+      }
+
       const scrollPos = Math.max(window.pageYOffset, document.documentElement.scrollTop, document.body.scrollTop);
       if (scrollPos > hideThreshold) { 
         setIsVisible(false);
@@ -41,7 +53,10 @@ export const Navbar = ({ className }: { className?: string }) => {
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
-    return () => window.removeEventListener("scroll", handleScroll, true);
+    return () => {
+      window.clearTimeout(mountTimer);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
   }, [pathname]);
 
 // New effect to force the Camera Toggle below the Navbar
@@ -153,25 +168,11 @@ export const Navbar = ({ className }: { className?: string }) => {
   };
 
   if (!mounted) return null;
-  // Framer Motion variants for the hamburger lines
-  const variantUpper = {
-    closed: { rotate: 0, y: 0 },
-    opened: { rotate: 45, y: 6 },
-  };
-  const variantMiddle = {
-    closed: { opacity: 1 },
-    opened: { opacity: 0 },
-  };
-  const variantLower = {
-    closed: { rotate: 0, y: 0 },
-    opened: { rotate: -45, y: -6 },
-  };
-
   return (
     <> {/* FIX 1: Fragment wrapper allows two top-level elements (Navbar + Overlay) */}
       <div className={cn(
-        "fixed inset-x-2 md:inset-x-0 md:max-w-4xl mx-auto z-[9000] px-4 transition-all duration-500 ease-in-out pointer-events-none",
-        isVisible ? "top-4 md:top-10 opacity-100 translate-y-0" 
+        "fixed inset-x-2 md:inset-x-0 md:max-w-5xl mx-auto z-[9000] px-4 transition-all duration-500 ease-in-out pointer-events-none",
+        isVisible ? "top-4 md:top-8 opacity-100 translate-y-0" 
           : "-top-32 opacity-0 -translate-y-full pointer-events-none",
         className
       )}>
@@ -214,6 +215,7 @@ export const Navbar = ({ className }: { className?: string }) => {
               <Link 
                 key={link.name} 
                 href={link.href} 
+                prefetch={false}
                 className="text-sm font-medium text-neutral-300 transition-colors hover:text-white"
               >
                 {link.name}
@@ -224,58 +226,33 @@ export const Navbar = ({ className }: { className?: string }) => {
           </div>
 
           {/* MAGNETIC PULSE TRIGGER */}
-          <div className="flex md:hidden items-center gap-4">
+          <div className="flex md:hidden items-center gap-2">
             <ModeToggle />
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              // z-[11001] ensures it stays above the z-[11000] black overlay
-              className="relative z-[8000] flex h-10 w-10 items-center justify-center group focus:outline-none"
-            >
-              {/* The Pulse Rings (Only visible when CLOSED) */}
-              <AnimatePresence>
-                {!isOpen && (
-                  <>
-                    <motion.div 
-                      initial={{ scale: 1, opacity: 0.5 }}
-                      animate={{ scale: 2.2, opacity: 0 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                      className="absolute h-6 w-6 rounded-full border border-white/40 blur-[1px]"
-                    />
-                    <motion.div 
-                      animate={isOpen ? { scale: 0 } : { scale: 1, backgroundColor: "rgba(255,255,255,0.6)" }}
-                      className="absolute z-50 h-3 w-3 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                    />
-                  </>
-                )}
-              </AnimatePresence>
-
-              {/* The Close Icon (Only visible when OPENED) */}
-              <AnimatePresence mode="wait">
-    {!isOpen ? (
-      /* The Pulse Core (Closed State) */
-      <motion.div 
-        key="pulse"
-        className="h-3 w-3 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)]"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0 }}
-      />
-    ) : (
-      /* The High-Visibility X (Open State) */
-      <motion.div 
-        key="close"
-        initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-        animate={{ opacity: 1, rotate: 0, scale: 1 }}
-        exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-        className="relative flex items-center justify-center h-6 w-6"
-      >
-        {/* These spans create a thick white X that pops on black bg */}
-        <span className="absolute h-[2px] w-full bg-white rotate-45 rounded-full" />
-        <span className="absolute h-[2px] w-full bg-white -rotate-45 rounded-full" />
-      </motion.div>
-    )}
-  </AnimatePresence>
-            </button>
+            <div className="relative z-[8000] flex flex-col items-center justify-center">
+              <button 
+                onClick={() => setIsOpen(!isOpen)}
+                // z-[11001] ensures it stays above the z-[11000] black overlay
+                className="relative flex h-10 w-12 items-center justify-center focus:outline-none"
+              >
+                <motion.span
+                  initial={false}
+                  animate={{ opacity: isOpen ? 0 : 1 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold uppercase tracking-[0.14em] text-white"
+                >
+                  Menu
+                </motion.span>
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: isOpen ? 1 : 0, scale: isOpen ? 1 : 0.9 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <span className="absolute h-[1.5px] w-5 rounded-full bg-white rotate-45" />
+                  <span className="absolute h-[1.5px] w-5 rounded-full bg-white -rotate-45" />
+                </motion.div>
+              </button>
+            </div>
           </div>
         </nav>
       </div>
@@ -290,7 +267,7 @@ export const Navbar = ({ className }: { className?: string }) => {
             transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
             className="fixed inset-0 z-[8000] bg-black flex flex-col items-center justify-center gap-12 md:hidden"
           >
-            {navLinks.map((link, i) => (
+            {mobileNavLinks.map((link, i) => (
               <motion.div
                 key={link.name}
                 initial={{ opacity: 0, y: 30 }}
@@ -299,6 +276,7 @@ export const Navbar = ({ className }: { className?: string }) => {
               >
                 <Link
                   href={link.href}
+                  prefetch={false}
                   onClick={() => setIsOpen(false)}
                   className="text-4xl font-semibold tracking-tight text-white transition-all duration-300 hover:text-white/80"
                 >

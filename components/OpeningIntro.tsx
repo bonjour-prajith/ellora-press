@@ -24,7 +24,11 @@ const TEXT_REVEAL_MS = Math.max(
 );
 const LOGO_ENTRANCE_DELAY_MS = 90;
 
-export default function OpeningIntro() {
+type OpeningIntroProps = {
+  onComplete?: () => void;
+};
+
+export default function OpeningIntro({ onComplete }: OpeningIntroProps) {
   const [phase, setPhase] = useState<IntroPhase>("play");
   const [visible, setVisible] = useState(true);
   const lottieRef = useRef<LottieRefCurrentProps>(null);
@@ -32,7 +36,6 @@ export default function OpeningIntro() {
   const bodyOverflowRef = useRef<string>("");
   const phaseRef = useRef<IntroPhase>("play");
   const startTimerRef = useRef<number | null>(null);
-  const exitTimerRef = useRef<number | null>(null);
   const doneTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -51,9 +54,10 @@ export default function OpeningIntro() {
     }, LOGO_ENTRANCE_DELAY_MS);
 
     return () => {
-      if (startTimerRef.current) window.clearTimeout(startTimerRef.current);
-      if (exitTimerRef.current) window.clearTimeout(exitTimerRef.current);
-      if (doneTimerRef.current) window.clearTimeout(doneTimerRef.current);
+      const startTimer = startTimerRef.current;
+      const doneTimer = doneTimerRef.current;
+      if (startTimer) window.clearTimeout(startTimer);
+      if (doneTimer) window.clearTimeout(doneTimer);
       document.documentElement.style.overflow = htmlOverflowRef.current;
       document.body.style.overflow = bodyOverflowRef.current;
     };
@@ -65,10 +69,11 @@ export default function OpeningIntro() {
         setVisible(false);
         document.documentElement.style.overflow = htmlOverflowRef.current;
         document.body.style.overflow = bodyOverflowRef.current;
+        onComplete?.();
         window.dispatchEvent(new Event("opening-intro:complete"));
       }, 650);
     }
-  }, [phase]);
+  }, [phase, onComplete]);
 
   const handleFlipComplete = () => {
     if (phaseRef.current === "play") {
@@ -97,7 +102,7 @@ export default function OpeningIntro() {
           }}
         >
           <div className="absolute inset-0 bg-black" />
-          <div className="relative z-10 flex -translate-y-5 flex-col items-center justify-center md:-translate-x-13 md:-translate-y-8 md:flex-row">
+          <div className="relative z-10 flex -translate-y-16 flex-col items-center justify-center md:-translate-x-13 md:-translate-y-8 md:flex-row">
             <motion.div
               className="relative flex flex-col items-center md:flex-row"
               initial={false}

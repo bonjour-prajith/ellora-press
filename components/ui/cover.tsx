@@ -15,6 +15,7 @@ export const Cover = ({
   disableHover?: boolean;
 }) => {
   const [hovered, setHovered] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -47,6 +48,35 @@ export const Cover = ({
     return () => window.removeEventListener("resize", updateBeamLayout);
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+    return () => mediaQuery.removeEventListener("change", updatePreference);
+  }, []);
+
+  const isLowEndDevice = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const connection =
+      "connection" in navigator
+        ? ((navigator as Navigator & {
+            connection?: { saveData?: boolean };
+          }).connection ?? null)
+        : null;
+    const saveData = Boolean(connection?.saveData);
+    const lowMemory =
+      "deviceMemory" in navigator &&
+      Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) > 0 &&
+      Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) <= 4;
+    const lowCpu = navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    return saveData || lowMemory || lowCpu || coarsePointer;
+  }, []);
+
+  const shouldRenderSparkles = hovered && !prefersReducedMotion && !isLowEndDevice;
+  const shouldAnimateLabel = hovered && !prefersReducedMotion && !isLowEndDevice;
+
   return (
     <div
       onMouseEnter={() => {
@@ -59,7 +89,7 @@ export const Cover = ({
       className="relative group/cover inline-block bg-neutral-900 px-2 py-2 transition duration-200 hover:bg-black dark:bg-neutral-900 dark:hover:bg-neutral-900 rounded-sm"
     >
       <AnimatePresence>
-        {hovered && (
+        {shouldRenderSparkles && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -88,17 +118,19 @@ export const Cover = ({
                 background="transparent"
                 minSize={0.4}
                 maxSize={1}
-                particleDensity={500}
+                particleDensity={280}
                 className="w-full h-full"
                 particleColor="#FFFFFF"
+                performanceMode="auto"
               />
               <SparklesCore
                 background="transparent"
                 minSize={0.4}
                 maxSize={1}
-                particleDensity={500}
+                particleDensity={280}
                 className="w-full h-full"
                 particleColor="#FFFFFF"
+                performanceMode="auto"
               />
             </motion.div>
           </motion.div>
@@ -119,9 +151,9 @@ export const Cover = ({
       <motion.span
         key={String(hovered)}
         animate={{
-          scale: hovered ? 0.8 : 1,
-          x: hovered ? [0, -30, 30, -30, 30, 0] : 0,
-          y: hovered ? [0, 30, -30, 30, -30, 0] : 0,
+          scale: shouldAnimateLabel ? 0.8 : 1,
+          x: shouldAnimateLabel ? [0, -30, 30, -30, 30, 0] : 0,
+          y: shouldAnimateLabel ? [0, 30, -30, 30, -30, 0] : 0,
         }}
         exit={{
           filter: "none",
@@ -133,12 +165,12 @@ export const Cover = ({
           duration: 0.2,
           x: {
             duration: 0.2,
-            repeat: Infinity,
+            repeat: shouldAnimateLabel ? Infinity : 0,
             repeatType: "loop",
           },
           y: {
             duration: 0.2,
-            repeat: Infinity,
+            repeat: shouldAnimateLabel ? Infinity : 0,
             repeatType: "loop",
           },
           scale: {
@@ -156,9 +188,9 @@ export const Cover = ({
         {children}
       </motion.span>
       <CircleIcon className="absolute -right-[2px] -top-[2px]" />
-      <CircleIcon className="absolute -bottom-[2px] -right-[2px]" delay={0.4} />
-      <CircleIcon className="absolute -left-[2px] -top-[2px]" delay={0.8} />
-      <CircleIcon className="absolute -bottom-[2px] -left-[2px]" delay={1.6} />
+      <CircleIcon className="absolute -bottom-[2px] -right-[2px]" />
+      <CircleIcon className="absolute -left-[2px] -top-[2px]" />
+      <CircleIcon className="absolute -bottom-[2px] -left-[2px]" />
     </div>
   );
 };
@@ -237,10 +269,8 @@ export const Beam = ({
 
 export const CircleIcon = ({
   className,
-  delay,
 }: {
   className?: string;
-  delay?: number;
 }) => {
   return (
     <div

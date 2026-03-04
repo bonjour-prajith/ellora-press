@@ -2,12 +2,21 @@
 import React, { useRef } from "react";
 import {
   motion,
-  useAnimationFrame,
   useMotionTemplate,
   useMotionValue,
   useTransform,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  borderRadius?: string;
+  children: React.ReactNode;
+  as?: React.ElementType;
+  containerClassName?: string;
+  borderClassName?: string;
+  duration?: number;
+  className?: string;
+};
 
 export function Button({
   borderRadius = "1.75rem",
@@ -18,18 +27,18 @@ export function Button({
   duration = 2000,
   className,
   ...otherProps
-}: any) {
-  return (
-    <Component
-      className={cn(
+}: ButtonProps) {
+  return React.createElement(
+    Component as React.ElementType,
+    {
+      className: cn(
         "bg-transparent relative text-xl  h-16 w-40 p-[1px] overflow-hidden ",
         containerClassName
-      )}
-      style={{
-        borderRadius: borderRadius,
-      }}
-      {...otherProps}
-    >
+      ),
+      style: { borderRadius },
+      ...otherProps,
+    },
+    <>
       <div
         className="absolute inset-0"
         style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
@@ -55,7 +64,7 @@ export function Button({
       >
         {children}
       </div>
-    </Component>
+    </>
   );
 }
 
@@ -65,8 +74,13 @@ export const MovingBorder = ({
   rx,
   ry,
   ...otherProps
-}: any) => {
-  const pathRef = useRef<any>(null);
+}: React.SVGProps<SVGSVGElement> & {
+  children: React.ReactNode;
+  duration?: number;
+  rx?: string;
+  ry?: string;
+}) => {
+  const pathRef = useRef<SVGRectElement | null>(null);
   const progress = useMotionValue<number>(0);
 
   // We are using a standard React loop instead of useAnimationFrame 

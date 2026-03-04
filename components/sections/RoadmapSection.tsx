@@ -26,7 +26,7 @@ return (
             className="mb-7 md:mb-20"
           >
             <span className="font-mono text-[9px] md:text-[10px] tracking-[0.34em] md:tracking-[0.4em] uppercase opacity-50">Workflow // 02</span>
-            <h2 className="text-[2.45rem] sm:text-5xl md:text-7xl font-bold tracking-tighter mt-2 md:mt-4 text-foreground">What's Next.</h2>
+            <h2 className="text-[2.45rem] sm:text-5xl md:text-7xl font-bold tracking-tighter mt-2 md:mt-4 text-foreground">What&apos;s Next.</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-6 md:gap-12 relative">

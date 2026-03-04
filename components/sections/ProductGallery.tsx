@@ -23,11 +23,11 @@ interface ProductGalleryProps {
 }
 
 export const ProductGallery = ({ products }: ProductGalleryProps) => {
-  if (!products?.length) return null;
-
-  const [activeKit, setActiveKit] = useState(products[0]);
+  const [activeKit, setActiveKit] = useState(products[0] ?? null);
   const [activeItemIndex, setActiveItemIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  if (!products?.length || !activeKit) return null;
 
   const labels = ["Publications", "Packaging", "Branding", "Promotional"];
   const cmykPalette = ["#a2ffff", "#ff94ff", "#fbfb92", "#ffffff"];
@@ -146,7 +146,7 @@ export const ProductGallery = ({ products }: ProductGalleryProps) => {
             </div>
 
             <div className="mt-10 opacity-45">
-              <p className="max-w-[320px] text-lg italic leading-relaxed font-light">"{activeKit.tagline}"</p>
+              <p className="max-w-[320px] text-lg italic leading-relaxed font-light">&quot;{activeKit.tagline}&quot;</p>
             </div>
           </div>
 

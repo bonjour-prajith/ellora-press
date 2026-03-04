@@ -113,6 +113,16 @@ const SVG = ({
     svgOptions?.colors && svgOptions.colors.length > 0
       ? svgOptions.colors
       : defaultColors;
+  const delayMax = svgOptions?.delayMax ?? 10;
+  const repeatDelayMax = svgOptions?.repeatDelayMax ?? 10;
+  const randomTimings = paths.map((_, idx) => {
+    const seedA = ((idx + 1) * 73) % 997;
+    const seedB = ((idx + 1) * 151) % 991;
+    return {
+      delay: delayMax > 0 ? seedA % delayMax : 0,
+      repeatDelay: repeatDelayMax > 0 ? (seedB % repeatDelayMax) + 2 : 2,
+    };
+  });
   return (
     <motion.svg
       viewBox="0 0 1440 900"
@@ -139,10 +149,10 @@ const SVG = ({
             repeatType: "loop",
             delay: svgOptions?.immediate
               ? 0
-              : Math.floor(Math.random() * (svgOptions?.delayMax ?? 10)),
+              : randomTimings[idx]?.delay ?? 0,
             repeatDelay: svgOptions?.immediate
               ? 0
-              : Math.floor(Math.random() * (svgOptions?.repeatDelayMax ?? 10) + 2),
+              : randomTimings[idx]?.repeatDelay ?? 2,
           }}
           key={`path-first-${idx}`}
         />
@@ -165,10 +175,10 @@ const SVG = ({
             repeatType: "loop",
             delay: svgOptions?.immediate
               ? 0
-              : Math.floor(Math.random() * (svgOptions?.delayMax ?? 10)),
+              : randomTimings[idx]?.delay ?? 0,
             repeatDelay: svgOptions?.immediate
               ? 0
-              : Math.floor(Math.random() * (svgOptions?.repeatDelayMax ?? 10) + 2),
+              : randomTimings[idx]?.repeatDelay ?? 2,
           }}
           key={`path-second-${idx}`}
         />

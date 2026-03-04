@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/ui/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import WebVitalsReporter from "@/components/monitoring/WebVitalsReporter";
+import DeferredSpeedInsights from "@/components/monitoring/DeferredSpeedInsights";
 import BackToTop from "@/components/BackToTop";
-import OpeningIntro from "@/components/OpeningIntro";
+import RouteAwareIntro from "@/components/RouteAwareIntro";
+import { WhatsAppFloating } from "@/components/WhatsAppFloating";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,9 +64,9 @@ export const metadata: Metadata = {
     template: "%s | Ellora Press",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "/favicon.ico?v=2",
+    shortcut: "/favicon.ico?v=2",
+    apple: "/favicon.ico?v=2",
   },
   description:
     "Commercial print specialists for packaging, publications, technical manuals, and high-volume production with precision color control.",
@@ -98,9 +100,17 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  colorScheme: "dark light",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <script
           type="application/ld+json"
@@ -120,16 +130,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           storageKey="my-app-theme"
           disableTransitionOnChange
         >
-          <OpeningIntro />
+          <RouteAwareIntro />
           <WebVitalsReporter />
           {/* Navbar must be inside the ThemeProvider to use the Toggle logic */}
           <Navbar />
+          <WhatsAppFloating />
           <BackToTop />
           
           <main id="main-content" tabIndex={-1}>
             {children}
           </main>
         </ThemeProvider>
+        <DeferredSpeedInsights />
       </body>
     </html>
   );

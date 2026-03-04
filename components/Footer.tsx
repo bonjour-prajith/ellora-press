@@ -24,9 +24,7 @@ const footerLinks = {
 
 const QUICK_QUOTE_QR_VALUE =
   "https://wa.me/918939000230?text=Hi%20Ellora%20Press%2C%20I%20need%20a%20quick%20quote.";
-const QUICK_QUOTE_QR_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=10&ecc=M&format=svg&data=${encodeURIComponent(
-  QUICK_QUOTE_QR_VALUE
-)}`;
+const QUICK_QUOTE_QR_SRC = "/QR-WA.jpg?v=2";
 
 export default function Footer() {
 
@@ -106,19 +104,25 @@ const lottieRef = useRef<LottieRefCurrentProps>(null);
             </div>
 
             <div className="col-span-2 mt-4 md:mt-0 flex flex-col items-center text-center md:col-span-1 lg:self-center lg:-translate-x-16">
-              <div className="inline-flex flex-col items-center rounded-xl border border-white/10 bg-white p-2">
+              <a
+                href={QUICK_QUOTE_QR_VALUE}
+                aria-label="Open WhatsApp quick quote"
+                className="inline-flex flex-col items-center rounded-xl border border-white/10 bg-white p-2"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Image
                   src={QUICK_QUOTE_QR_SRC}
-                  alt="Scan for a Quick Quote QR"
+                  alt="Tap for a Quick Quote QR"
                   width={96}
                   height={96}
                   sizes="96px"
                   unoptimized
                   className="h-24 w-24 object-contain"
                 />
-              </div>
+              </a>
               <p className="mt-3 max-w-[10rem] text-center text-xs leading-relaxed text-neutral-400">
-                Scan for a Quick Quote
+                Tap for Quick Quote
               </p>
             </div>
           </div>

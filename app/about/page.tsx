@@ -92,10 +92,10 @@ export default function AboutPage() {
             <div className="border-y border-black/10 py-5 dark:border-white/10 md:py-6">
               <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                 {[
-                  { name: "GIC", label: "Guardian Independent Certification", src: "/about page/gic.png" },
-                  { name: "MSME", label: "Micro, Small & Medium Enterprises", src: "/about page/msme.png" },
-                  { name: "ISO 9001:2015", label: "ISO Certification", src: "/about page/iso.png" },
-                  { name: "FIEO", label: "Federation of Indian Export Organisations", src: "/about page/fieo.png" },
+                  { name: "GIC", label: "Guardian Independent Certification", src: "/about page/gic.webp" },
+                  { name: "MSME", label: "Micro, Small & Medium Enterprises", src: "/about page/msme.webp" },
+                  { name: "ISO 9001:2015", label: "ISO Certification", src: "/about page/iso.webp" },
+                  { name: "FIEO", label: "Federation of Indian Export Organisations", src: "/about page/fieo.webp" },
                 ].map((item) => (
                   <div key={item.name}>
                     <div className="grid h-24 place-items-center">
@@ -153,7 +153,7 @@ export default function AboutPage() {
                 </h4>
               </div>
               <div className="space-y-4 md:col-span-4 md:space-y-8">
-                <p className="text-sm leading-relaxed italic text-neutral-600 dark:text-neutral-300 md:text-lg">"{item.desc}"</p>
+                <p className="text-sm leading-relaxed italic text-neutral-600 dark:text-neutral-300 md:text-lg">&quot;{item.desc}&quot;</p>
                 <div className="inline-block rounded-full border border-black/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neutral-500 dark:border-white/10 dark:text-neutral-400 md:px-4 md:py-2">
                     Tech Spec: {item.detail}
                 </div>

@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "@/components/ui/moving-border";
 import { QuoteModal } from "@/components/QuoteModal";
 import { Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
@@ -8,11 +7,9 @@ import Link from "next/link";
 import Lottie from "lottie-react";
 import logoAnimation from "@/public/Logos/hourglasslogo-animate.json";
 
+const QUICK_QUOTE_QR_SRC = "/QR-WA.jpg?v=2";
 const QUICK_QUOTE_QR_VALUE =
   "https://wa.me/918939000230?text=Hi%20Ellora%20Press%2C%20I%20need%20a%20quick%20quote.";
-const QUICK_QUOTE_QR_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=10&ecc=M&format=svg&data=${encodeURIComponent(
-  QUICK_QUOTE_QR_VALUE
-)}`;
 
 const suggestions = [
   "Packaging recommendations by budget",
@@ -184,19 +181,25 @@ export default function ContactPage() {
 
                 <div className="mt-4 border-t border-black/10 pt-4 dark:border-white/10">
                   <div className="mt-1 flex items-center gap-4">
-                    <div className="rounded-xl border border-white/10 bg-white p-2">
+                    <a
+                      href={QUICK_QUOTE_QR_VALUE}
+                      aria-label="Open WhatsApp quick quote"
+                      className="rounded-xl border border-white/10 bg-white p-2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <Image
                         src={QUICK_QUOTE_QR_SRC}
-                        alt="Scan for a Quick Quote QR"
+                        alt="Tap for a Quick Quote QR"
                         width={80}
                         height={80}
                         sizes="80px"
                         unoptimized
                         className="h-20 w-20 object-contain"
                       />
-                    </div>
+                    </a>
                     <p className="max-w-[8rem] text-sm leading-tight text-neutral-500">
-                      Scan for a
+                      Tap for a
                       <br />
                       Quick Quote
                     </p>

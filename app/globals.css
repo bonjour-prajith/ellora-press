@@ -5,12 +5,16 @@
 
 @layer base {
   :root {
+    --background: #fafafa;
+    --foreground: #111111;
     --glass-bg: rgba(255, 255, 255, 0.2);
-    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-border: rgba(17, 17, 17, 0.15);
     color-scheme: light !important;
   }
 
   .dark {
+    --background: #000000;
+    --foreground: #f5f5f5;
     --glass-bg: rgba(10, 10, 10, 0.2);
     --glass-border: rgba(255, 255, 255, 0.1);
     color-scheme: dark !important;
@@ -24,8 +28,8 @@
   }
 
   body {
-    background-color: var(--background) !important;
-    color: var(--foreground) !important;
+    background-color: var(--background, #000000) !important;
+    color: var(--foreground, #f5f5f5) !important;
     transition: none;
     min-height: 100vh;
     height: auto;
@@ -33,7 +37,8 @@
 
   /* Keep smooth scroll, but disable global snap to avoid sticky/observer conflicts */
   html {
-    scroll-behavior: smooth;
+    background-color: var(--background, #fafafa);
+    scroll-behavior: auto;
   }
 }
 

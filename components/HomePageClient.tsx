@@ -1,19 +1,39 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/moving-border";
-import { BookCard } from "@/components/ui/book-card";
 import { Cover } from "@/components/ui/cover"; 
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards";
 import { QuoteModal } from "@/components/QuoteModal";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence, useScroll, useTransform, animate } from "framer-motion";
-import { Terminal, Tag, UploadCloud, Eye, Zap } from "lucide-react";
-import { X, ChevronRight, ChevronLeft, Package, BookOpen, Send } from "lucide-react";
+import { motion, AnimatePresence, useScroll, useTransform, type MotionValue } from "framer-motion";
 
-import { PRODUCT_DATA, bentoItems, partners } from "@/data/site-data";
+import { PRODUCT_DATA, partners } from "@/data/site-data";
+
+type LegacyNavigator = Navigator & {
+  getUserMedia?: (
+    constraints: MediaStreamConstraints,
+    onSuccess: (stream: MediaStream) => void,
+    onError: (error: DOMException) => void
+  ) => void;
+  webkitGetUserMedia?: (
+    constraints: MediaStreamConstraints,
+    onSuccess: (stream: MediaStream) => void,
+    onError: (error: DOMException) => void
+  ) => void;
+  mozGetUserMedia?: (
+    constraints: MediaStreamConstraints,
+    onSuccess: (stream: MediaStream) => void,
+    onError: (error: DOMException) => void
+  ) => void;
+  msGetUserMedia?: (
+    constraints: MediaStreamConstraints,
+    onSuccess: (stream: MediaStream) => void,
+    onError: (error: DOMException) => void
+  ) => void;
+};
 
 const WebcamPixelGrid = dynamic(
   () => import("@/components/ui/webcam-pixel-grid").then((module) => module.WebcamPixelGrid),
@@ -39,59 +59,6 @@ const OperationsSection = dynamic(
 const RoadmapSection = dynamic(() => import("@/components/sections/RoadmapSection"));
 const Footer = dynamic(() => import("@/components/Footer"));
 
-
-
-// --- SUB-COMPONENTS ---
-const ProductStack = ({ images, items }: { images: string[], items: string[] }) => {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <div 
-      className="relative w-full h-[450px] flex items-center justify-center cursor-pointer"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {images.map((src, index) => (
-        <motion.div
-          key={index}
-          className="absolute w-64 h-80 bg-zinc-100 dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-black/5 dark:border-white/10"
-          animate={{
-            x: hovered ? (index - (images.length - 1) / 2) * 100 : index * 4,
-            y: hovered ? -30 : index * 4,
-            rotate: hovered ? (index - (images.length - 1) / 2) * 8 : 0,
-            zIndex: hovered ? 50 : 10 - index,
-            scale: hovered ? 1.05 : 1 - index * 0.05,
-          }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        >
-          <div className="w-full h-full p-4 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm">
-             <div className="relative h-48 w-full overflow-hidden rounded-lg shadow-lg">
-               <Image
-                 src={src}
-                 alt={items[index]}
-                 fill
-                 sizes="256px"
-                 className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
-               />
-             </div>
-             <p className="mt-4 font-mono text-[9px] uppercase tracking-widest text-foreground/60 text-center">
-               {items[index]}
-             </p>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
-interface WorkflowStep {
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-  btn?: boolean;
-  highlight?: boolean;
-}
-
 export default function Home() {
   const CAMERA_ACTIVE_KEY = "ep:webcam-active";
   const CAMERA_ICON_KEY = "ep:camera-prompt-icon";
@@ -104,51 +71,13 @@ export default function Home() {
   const [cameraKnobActive, setCameraKnobActive] = useState(false);
   const [cameraRequestPending, setCameraRequestPending] = useState(false);
   const [isMobilePopupView, setIsMobilePopupView] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-  const [activeKit, setActiveKit] = useState(PRODUCT_DATA[0]);
-  const [hoveredProductIndex, setHoveredProductIndex] = useState(0);
   const [isTeaserCardRevealed, setIsTeaserCardRevealed] = useState(false);
-  const promptReopenBlockedUntilRef = useRef(0);
-  const currentYear = new Date().getFullYear();
+  const isPromptReopenBlockedRef = useRef(false);
+  const promptReopenTimerRef = useRef<number | null>(null);
   const { scrollY } = useScroll();
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroPointerEvents = useTransform(scrollY, [0, 300], ["auto", "none"]);
   const isTouchLikeViewport = isMobilePopupView;
-  
-
-
-  const steps = [
-    { title: "Input Specs", desc: "Hit 'Get Quote' and type your requirements. They are pulled directly into our system.", icon: <Terminal size={20} />, btn: true },
-    { title: "Get Pricing", desc: "Receive your quotation via email along with a quality checklist for your design files.", icon: <Tag size={20} /> },
-    { title: "Send Files", desc: "Send files to solutions@ellorapress.com. No design? We can help you with that.", icon: <UploadCloud size={20} /> },
-    { title: "Free Proof", desc: "Review a free physical sample of your product before the press rolls.", icon: <Eye size={20} /> },
-    { title: "Warp Speed", desc: "Your amazing products are printed, finished, and delivered at Ellora Press speed.", icon: <Zap size={20} />, highlight: true }
-  ];
-  
-
-  useEffect(() => {
-    // ALL OBSERVER LOGIC MUST BE INSIDE USEEFFECT
-    const observerOptions = {
-        root: null,
-        rootMargin: '-20% 0% -20% 0%',
-        threshold: 0.1,
-    };
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                const index = entry.target.getAttribute('data-index');
-                if (index !== null) setActiveTab(parseInt(index));
-            }
-        });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    const targets = document.querySelectorAll('.why-us-content-block');
-    targets.forEach((target) => observer.observe(target));
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (webcamError !== "initial") return;
@@ -178,23 +107,6 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    const savedWebcam = window.sessionStorage.getItem(CAMERA_ACTIVE_KEY) === "1";
-    const savedPromptIcon = window.sessionStorage.getItem(CAMERA_ICON_KEY);
-
-    if (savedPromptIcon === "1") {
-      setShowCameraPromptIcon(true);
-    }
-
-    if (savedWebcam) {
-      void requestCameraAccess();
-    } else if (savedPromptIcon !== "0") {
-      setShowCameraPromptIcon(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
     window.sessionStorage.setItem(CAMERA_ACTIVE_KEY, isWebcamActive ? "1" : "0");
   }, [isWebcamActive]);
 
@@ -208,12 +120,15 @@ export default function Home() {
       if (cameraStream) {
         cameraStream.getTracks().forEach((track) => track.stop());
       }
+      if (promptReopenTimerRef.current !== null) {
+        window.clearTimeout(promptReopenTimerRef.current);
+      }
     };
   }, [cameraStream]);
 
   // --- LOGIC FUNCTIONS ---
 
-  const getCameraErrorMessage = (err: unknown) => {
+  const getCameraErrorMessage = useCallback((err: unknown) => {
     const error = err as DOMException | Error | undefined;
     const name = error?.name;
 
@@ -236,11 +151,18 @@ export default function Home() {
       return "Camera initialization was interrupted. Please try again.";
     }
     return "Unable to access the camera right now. Please try again.";
-  };
+  }, []);
 
   const disableCamera = useCallback(() => {
     // Prevent tap-through into the prompt button when controls swap positions.
-    promptReopenBlockedUntilRef.current = Date.now() + 500;
+    isPromptReopenBlockedRef.current = true;
+    if (promptReopenTimerRef.current !== null) {
+      window.clearTimeout(promptReopenTimerRef.current);
+    }
+    promptReopenTimerRef.current = window.setTimeout(() => {
+      isPromptReopenBlockedRef.current = false;
+      promptReopenTimerRef.current = null;
+    }, 500);
     setIsWebcamActive(false);
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
@@ -255,24 +177,58 @@ export default function Home() {
     setCameraKnobActive(false);
   }, [cameraStream]);
 
-  const requestCameraAccess = async (): Promise<boolean> => {
-    if (!navigator?.mediaDevices?.getUserMedia) {
-      const message = "Your browser does not support webcam access.";
+  const requestCameraAccess = useCallback(async (): Promise<boolean> => {
+    const nav = navigator as LegacyNavigator;
+    const constraints: MediaStreamConstraints = {
+      video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        facingMode: "user",
+      },
+    };
+
+    const hasModernApi = Boolean(nav.mediaDevices?.getUserMedia);
+    const legacyGetUserMedia =
+      nav.getUserMedia ||
+      nav.webkitGetUserMedia ||
+      nav.mozGetUserMedia ||
+      nav.msGetUserMedia;
+
+    const isSecureCameraContext =
+      window.isSecureContext ||
+      location.hostname === "localhost" ||
+      location.hostname === "127.0.0.1";
+
+    if (!isSecureCameraContext) {
+      const message =
+        "Camera requires HTTPS (or localhost). Open this site on a secure origin and try again.";
       setWebcamError(message);
       setShowErrorPopup(true);
+      setShowCameraPromptIcon(false);
+      alert(message);
+      return false;
+    }
+
+    if (!hasModernApi && !legacyGetUserMedia) {
+      const ua = navigator.userAgent.toLowerCase();
+      const isInAppBrowser = /(fbav|fban|instagram|line|wv|snapchat|twitter|micromessenger)/.test(ua);
+      const message = isInAppBrowser
+        ? "This in-app browser blocks camera access. Open this page in Safari or Chrome and try again."
+        : "Your browser does not support webcam access.";
+      setWebcamError(message);
+      setShowErrorPopup(true);
+      setShowCameraPromptIcon(false);
       alert(message);
       return false;
     }
 
     try {
       // 1. Physically request the stream to get permission
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: "user",
-        },
-      });
+      const stream = hasModernApi
+        ? await nav.mediaDevices!.getUserMedia(constraints)
+        : await new Promise<MediaStream>((resolve, reject) => {
+            legacyGetUserMedia!(constraints, resolve, reject);
+          });
       
       // 2. Update state to trigger component swap
       setCameraStream(stream);
@@ -291,7 +247,38 @@ export default function Home() {
       alert(message);
       return false;
     }
-  };
+  }, [getCameraErrorMessage]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const savedWebcam = window.sessionStorage.getItem(CAMERA_ACTIVE_KEY) === "1";
+    const savedPromptIcon = window.sessionStorage.getItem(CAMERA_ICON_KEY);
+    let cameraRestoreTimer: number | null = null;
+    const applyPromptVisibility = (visible: boolean) => {
+      window.setTimeout(() => setShowCameraPromptIcon(visible), 0);
+    };
+
+    if (savedPromptIcon === "1") {
+      applyPromptVisibility(true);
+    }
+
+    if (savedWebcam) {
+      cameraRestoreTimer = window.setTimeout(() => {
+        void requestCameraAccess();
+      }, 0);
+    } else if (savedPromptIcon !== "0") {
+      applyPromptVisibility(true);
+    }
+
+    return () => {
+      if (cameraRestoreTimer !== null) {
+        window.clearTimeout(cameraRestoreTimer);
+      }
+    };
+  }, [requestCameraAccess]);
+
+  const heroPointerEventsTyped = heroPointerEvents as MotionValue<"auto" | "none">;
 
   const triggerCameraEnable = async () => {
     if (cameraRequestPending) return;
@@ -312,7 +299,7 @@ export default function Home() {
   };
 
   const openCameraPrompt = () => {
-    if (Date.now() < promptReopenBlockedUntilRef.current) return;
+    if (isPromptReopenBlockedRef.current) return;
     setCameraKnobActive(false);
     if (isMobilePopupView) {
       setShowCameraPromptIcon(false);
@@ -320,14 +307,30 @@ export default function Home() {
     setShowErrorPopup(true);
   };
 
+  const toggleCameraPromptFromIcon = () => {
+    if (isPromptReopenBlockedRef.current) return;
+    if (showErrorPopup) {
+      closeCameraPrompt();
+      return;
+    }
+    openCameraPrompt();
+  };
+
   const closeCameraPrompt = () => {
-    promptReopenBlockedUntilRef.current = Date.now() + 350;
+    isPromptReopenBlockedRef.current = true;
+    if (promptReopenTimerRef.current !== null) {
+      window.clearTimeout(promptReopenTimerRef.current);
+    }
+    promptReopenTimerRef.current = window.setTimeout(() => {
+      isPromptReopenBlockedRef.current = false;
+      promptReopenTimerRef.current = null;
+    }, 350);
     setCameraKnobActive(false);
     setShowErrorPopup(false);
   };
 
   return (
-   <main className="snap-y snap-proximity scroll-smooth bg-background text-foreground antialiased relative transition-colors duration-500 hide-scrollbar"> 
+   <main className="scroll-smooth bg-background text-foreground antialiased relative transition-colors duration-500 hide-scrollbar"> 
       {/* Quote Modal Component */}
       <QuoteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       
@@ -398,7 +401,7 @@ export default function Home() {
     <motion.div
       style={{
         opacity: heroOpacity,
-        pointerEvents: heroPointerEvents as any,
+        pointerEvents: heroPointerEventsTyped,
       }}
       className="fixed bottom-10 inset-x-10 z-40 hidden items-center justify-between pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-500 md:flex"
     >
@@ -430,9 +433,9 @@ export default function Home() {
     <motion.button
       style={{
         opacity: heroOpacity,
-        pointerEvents: heroPointerEvents as any,
+        pointerEvents: heroPointerEventsTyped,
       }}
-      className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+0.9rem)] z-[10050] md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white/80 shadow-md backdrop-blur-lg transition-colors duration-150 hover:border-red-400/60 hover:bg-black/55 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+      className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+2.1rem)] z-[10050] md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white/80 shadow-md backdrop-blur-lg transition-colors duration-150 hover:border-red-400/60 hover:bg-black/55 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
       onClick={disableCamera}
       type="button"
       aria-label="Disable camera"
@@ -676,7 +679,7 @@ export default function Home() {
 <section className="snap-start bg-background py-60 md:py-100 border-t border-white/5">
   <div className="mx-auto max-w-6xl px-6 text-center">
     <p className="text-6xl font-bold tracking-tight text-foreground md:text-7xl">
-      " Judge a Book by it's Cover "
+      &quot; Judge a Book by it&apos;s Cover &quot;
     </p>
     <div className="mt-6 flex flex-col items-center gap-3">
       <p className="text-sm font-light tracking-wide text-neutral-500 md:text-lg">
@@ -696,7 +699,7 @@ export default function Home() {
 
 
       <div className="snap-start bg-background">
-  <div className="h-[0vh]" />
+        <div className="h-[0vh]" />
         <Footer />
       </div>
      {/* Error/Enable Popup */}
@@ -733,7 +736,7 @@ export default function Home() {
                     "fixed z-[10050]",
                     isMobilePopupView
                       ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                      : "right-22 top-[calc(env(safe-area-inset-top)+6rem)]"
+                      : "right-24 top-[calc(env(safe-area-inset-top)+7rem)]"
                   )}
                 >
                   <div
@@ -760,10 +763,10 @@ export default function Home() {
                   </button>
                   <div className="relative z-10 my-auto mx-auto w-full max-w-[14.75rem] px-2 md:max-w-[14.5rem] md:px-2.5">
                     <p className="text-[30px] font-black uppercase tracking-[0.12em] leading-[1.08] text-white/95 md:text-[27px] md:leading-[1.12] md:tracking-[0.11em]">
-                      Enter The Matrix
+                      Wanna See Something Cool ?
                     </p>
                     <p className="mt-2 max-w-[22ch] text-[13px] leading-[1.36] text-white/66 md:max-w-[24ch] md:text-[13px] md:leading-[1.45]">
-                      Enable camera for the interactive background 
+                      Enable camera to enter the matrix
                     </p>
                   </div>
 
@@ -805,15 +808,15 @@ export default function Home() {
           <motion.div
             style={{
               opacity: heroOpacity,
-              pointerEvents: heroPointerEvents as any,
+              pointerEvents: heroPointerEventsTyped,
             }}
           >
             <button
-              onMouseEnter={openCameraPrompt}
-              onClick={openCameraPrompt}
+              onClick={toggleCameraPromptFromIcon}
               className={cn(
-                "fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+0.9rem)] z-[10050] flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-black/72 text-white/65 shadow-lg transition-opacity duration-150 hover:border-cyan-300/35 hover:bg-black/88 hover:text-white hover:shadow-[0_0_18px_rgba(56,189,248,0.22)] md:bottom-auto md:right-12 md:top-[calc(env(safe-area-inset-top)+3.5rem)]",
-                showCameraPromptIcon ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+                "fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+2.1rem)] z-[10050] flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-black/72 text-white/65 shadow-lg transition-opacity duration-150 hover:border-cyan-300/35 hover:bg-black/88 hover:text-white hover:shadow-[0_0_18px_rgba(56,189,248,0.22)] md:bottom-auto md:right-12 md:top-[calc(env(safe-area-inset-top)+5.25rem)] pointer-events-auto opacity-100",
+                showErrorPopup &&
+                  "border-cyan-300/70 bg-black/90 text-white shadow-[0_0_18px_rgba(56,189,248,0.34)]"
               )}
               title="Open camera access prompt"
               aria-label="Open camera access prompt"
@@ -823,6 +826,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </button>
+
           </motion.div>
         </>
       ) : null}

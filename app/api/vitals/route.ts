@@ -50,7 +50,6 @@ export async function POST(request: Request) {
   // Log in development for quick verification; production forwarding can be added later.
   if (process.env.NODE_ENV !== "production") {
     const metric = payload;
-    // eslint-disable-next-line no-console
     console.info(
       `[WebVitals] ${metric.name}=${metric.value} rating=${metric.rating} path=${metric.path}`
     );

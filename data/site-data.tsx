@@ -1,8 +1,6 @@
 import { 
   IconShieldLock, 
-  IconPalette, 
   IconRocket, 
-  IconBoxMargin 
 } from "@tabler/icons-react";
 
 

@@ -140,8 +140,8 @@ export default function OperationsSection() {
                         className="object-cover object-center md:[object-position:var(--desktop-object-position)]"
                         style={{ "--desktop-object-position": item.imagePosition } as CSSProperties}
                         quality={80}
-                        priority
-                        loading="eager"
+                        priority={index === 0}
+                        loading={index === 0 ? "eager" : "lazy"}
                       />
                     </div>
                   );
@@ -154,13 +154,13 @@ export default function OperationsSection() {
             </button>
           </div>
 
-          <div className="border-y border-white/10">
+          <div className="border-y border-black/10 dark:border-white/10">
             {CAPABILITIES.map((item, index) => {
               const isActive = index === activeIndex;
               const Icon = item.icon;
 
               return (
-                <div key={item.label} className="border-b border-white/10 last:border-b-0">
+                <div key={item.label} className="border-b border-black/10 dark:border-white/10 last:border-b-0">
                   <button
                     type="button"
                     onClick={() => setActiveIndex(index)}

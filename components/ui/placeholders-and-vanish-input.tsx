@@ -14,23 +14,25 @@ export function PlaceholdersAndVanishInput({
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startAnimation = () => {
+  const startAnimation = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
     }, 3000);
-  };
+  }, [placeholders.length]);
 
   useEffect(() => {
     startAnimation();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [placeholders]);
+  }, [startAnimation]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const newDataRef = useRef<any[]>([]);
+  type ParticleFrame = { x: number; y: number; r: number; color: string };
+  const newDataRef = useRef<ParticleFrame[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
   const [animating, setAnimating] = useState(false);
@@ -57,7 +59,7 @@ export function PlaceholdersAndVanishInput({
 
     const imageData = ctx.getImageData(0, 0, rect.width, rect.height);
     const pixelData = imageData.data;
-    const frames: any[] = [];
+    const frames: ParticleFrame[] = [];
 
     // loop through pixels based on actual canvas dimensions
     for (let t = 0; t < rect.height; t += 1) {
@@ -139,7 +141,7 @@ export function PlaceholdersAndVanishInput({
     e.preventDefault();
     if (!value || animating) return;
     vanishAndSubmit();
-    onSubmit && onSubmit(e);
+    if (onSubmit) onSubmit(e);
   };
 
   return (
@@ -161,7 +163,7 @@ export function PlaceholdersAndVanishInput({
         onChange={(e) => {
           if (!animating) {
             setValue(e.target.value);
-            onChange && onChange(e);
+            if (onChange) onChange(e);
           }
         }}
         ref={inputRef}

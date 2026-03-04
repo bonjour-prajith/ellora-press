@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { BackgroundLines } from "@/components/ui/background-lines";
+import { EncryptedText } from "@/components/ui/encrypted-text";
 
 type Highlight = {
   id: string;
@@ -233,6 +234,12 @@ export const WhyUsSection = () => {
   );
   const [isMobileInteraction, setIsMobileInteraction] = useState(false);
   const [isTabletLayout, setIsTabletLayout] = useState(false);
+  const disableLockCanvasEffect = (() => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = ua.includes("android");
+    return isAndroid;
+  })();
   const hoverEnabled = !isMobileInteraction;
   const sectionRef = React.useRef<HTMLElement | null>(null);
   const cardRefs = React.useRef<Record<string, HTMLElement | null>>({});
@@ -259,9 +266,6 @@ export const WhyUsSection = () => {
 
   useEffect(() => {
     visibleRatiosRef.current = {};
-    if (!isMobileInteraction) {
-      setActiveCardId(null);
-    }
   }, [isMobileInteraction]);
 
   useEffect(() => {
@@ -294,8 +298,6 @@ export const WhyUsSection = () => {
     let lastScrollTop = getScrollTop();
     let accumulatedDelta = 0;
     const stepThreshold = 48;
-
-    setActiveCardId((current) => current ?? "01");
 
     const updateFromScroll = () => {
       const sectionEl = sectionRef.current;
@@ -500,6 +502,17 @@ export const WhyUsSection = () => {
             );
             const cardBody = (
               <>
+                {item.tone === "lock" && disableLockCanvasEffect ? (
+                  <div
+                    className={cn(
+                      "pointer-events-none absolute inset-0 z-[1] transition-opacity duration-300 opacity-0",
+                      "bg-[radial-gradient(circle_at_18%_22%,rgba(96,165,250,0.22),transparent_34%),radial-gradient(circle_at_76%_70%,rgba(59,130,246,0.14),transparent_36%),linear-gradient(120deg,rgba(59,130,246,0.08)_0%,rgba(20,24,38,0)_60%)]",
+                      "[background-size:100%_100%,100%_100%,100%_100%]",
+                      isActive && "opacity-100"
+                    )}
+                  />
+                ) : null}
+
                 {item.tone !== "lock" ? (
                   <div
                     className={cn(
@@ -556,7 +569,17 @@ export const WhyUsSection = () => {
                         : isCardVisuallyActive && "text-zinc-100"
                     )}
                   >
-                    {item.title}
+                    {item.id === "02" && isCardVisuallyActive ? (
+                      <EncryptedText
+                        text={item.title}
+                        revealDelayMs={60}
+                        flipDelayMs={90}
+                        encryptedClassName="opacity-70"
+                        revealedClassName="opacity-100"
+                      />
+                    ) : (
+                      item.title
+                    )}
                   </h3>
                   <p
                     className={cn(
@@ -569,7 +592,17 @@ export const WhyUsSection = () => {
                         : isCardVisuallyActive && "text-zinc-400"
                     )}
                   >
-                    {item.description}
+                    {item.id === "02" && isCardVisuallyActive ? (
+                      <EncryptedText
+                        text={item.description}
+                        revealDelayMs={20}
+                        flipDelayMs={52}
+                        encryptedClassName="opacity-75"
+                        revealedClassName="opacity-100"
+                      />
+                    ) : (
+                      item.description
+                    )}
                   </p>
                 </div>
               </>
@@ -629,13 +662,27 @@ export const WhyUsSection = () => {
                   </div>
                 ) : null}
 
-                {item.tone === "lock" ? (
+                {item.tone === "lock" && disableLockCanvasEffect ? (
+                  <div
+                    className={cn(
+                      "group relative overflow-hidden rounded-3xl border border-black/10 p-5 shadow-[0_20px_60px_-42px_rgba(0,0,0,0.5)] transition-colors duration-300 dark:border-white/10 dark:bg-zinc-900/45",
+                      isMobileInteraction && isActive
+                        ? "bg-black/90 border-white/10"
+                        : "bg-neutral-500/40",
+                      hoverEnabled && "hover:bg-black/90 hover:border-white/10",
+                      isActive && "bg-black/90 border-white/10"
+                    )}
+                  >
+                    {cardBody}
+                  </div>
+                ) : item.tone === "lock" ? (
                   <CardSpotlight
                     active={isMobileInteraction ? isActive : false}
                     radius={400}
                     color="#262626"
                     lightColor="rgba(24, 24, 27, 0.72)"
                     lightModeTuned
+                    showCanvas={!disableLockCanvasEffect}
                     dotSize={3}
                     pixelRefresh={6}
                     pixelGrid={5}

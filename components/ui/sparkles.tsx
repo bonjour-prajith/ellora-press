@@ -17,6 +17,7 @@ type ParticlesProps = {
   speed?: number;
   particleColor?: string;
   particleDensity?: number;
+  performanceMode?: "auto" | "high" | "low";
 };
 export const SparklesCore = (props: ParticlesProps) => {
   const {
@@ -28,8 +29,42 @@ export const SparklesCore = (props: ParticlesProps) => {
     speed,
     particleColor,
     particleDensity,
+    performanceMode = "auto",
   } = props;
   const [init, setInit] = useState(false);
+  const isLowEndDevice = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    if (performanceMode === "high") {
+      return false;
+    }
+    if (performanceMode === "low") {
+      return true;
+    }
+
+    const connection =
+      "connection" in navigator
+        ? ((navigator as Navigator & {
+            connection?: { saveData?: boolean };
+          }).connection ?? null)
+        : null;
+    const saveData = Boolean(connection?.saveData);
+    const lowMemory =
+      "deviceMemory" in navigator &&
+      Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) > 0 &&
+      Number((navigator as Navigator & { deviceMemory?: number }).deviceMemory) <= 4;
+    const lowCpu = navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    return saveData || lowMemory || lowCpu || coarsePointer;
+  }, [performanceMode]);
+
+  const effectiveDensity = isLowEndDevice
+    ? Math.max(24, Math.round((particleDensity || 120) * 0.25))
+    : particleDensity || 120;
+  const effectiveSpeed = isLowEndDevice
+    ? Math.max(1, Math.round((speed || 4) * 0.5))
+    : speed || 4;
+  const effectiveFpsLimit = isLowEndDevice ? 45 : 90;
+
   useEffect(() => {
     initParticlesEngine(async (engine) => {
       await loadSlim(engine);
@@ -69,18 +104,18 @@ export const SparklesCore = (props: ParticlesProps) => {
               zIndex: 1,
             },
 
-            fpsLimit: 120,
+            fpsLimit: effectiveFpsLimit,
             interactivity: {
               events: {
                 onClick: {
-                  enable: true,
+                  enable: !isLowEndDevice,
                   mode: "push",
                 },
                 onHover: {
                   enable: false,
                   mode: "repulse",
                 },
-                resize: true as any,
+                resize: { enable: true },
               },
               modes: {
                 push: {
@@ -230,7 +265,7 @@ export const SparklesCore = (props: ParticlesProps) => {
                   mode: "delete",
                   value: 0,
                 },
-                value: particleDensity || 120,
+                value: effectiveDensity,
               },
               opacity: {
                 value: {
@@ -240,7 +275,7 @@ export const SparklesCore = (props: ParticlesProps) => {
                 animation: {
                   count: 0,
                   enable: true,
-                  speed: speed || 4,
+                  speed: effectiveSpeed,
                   decay: 0,
                   delay: 0,
                   sync: false,

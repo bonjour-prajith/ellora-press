@@ -76,7 +76,7 @@
 
             {/* Footer */}
             <Text style={{ fontStyle: 'italic', color: '#333', marginTop: '40px', fontSize: '16px' }}>
-            "Judge a Book by it's Cover."
+            &quot;Judge a Book by it&apos;s Cover.&quot;
             </Text>
             <Text style={{ fontSize: '14px', color: '#1a1a1a', fontWeight: 'bold', margin: '5px 0' }}>Ellora Press (P) Ltd</Text>
             <Text style={{ fontSize: '10px', color: '#666', margin: '5px 0' }}>19, Mayor Chittibabu St, Triplicane, Chennai - 600005</Text>
