@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -72,8 +72,6 @@ export default function Home() {
   const [cameraRequestPending, setCameraRequestPending] = useState(false);
   const [isMobilePopupView, setIsMobilePopupView] = useState(false);
   const [isTeaserCardRevealed, setIsTeaserCardRevealed] = useState(false);
-  const isPromptReopenBlockedRef = useRef(false);
-  const promptReopenTimerRef = useRef<number | null>(null);
   const { scrollY } = useScroll();
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroPointerEvents = useTransform(scrollY, [0, 300], ["auto", "none"]);
@@ -120,9 +118,6 @@ export default function Home() {
       if (cameraStream) {
         cameraStream.getTracks().forEach((track) => track.stop());
       }
-      if (promptReopenTimerRef.current !== null) {
-        window.clearTimeout(promptReopenTimerRef.current);
-      }
     };
   }, [cameraStream]);
 
@@ -154,15 +149,6 @@ export default function Home() {
   }, []);
 
   const disableCamera = useCallback(() => {
-    // Prevent tap-through into the prompt button when controls swap positions.
-    isPromptReopenBlockedRef.current = true;
-    if (promptReopenTimerRef.current !== null) {
-      window.clearTimeout(promptReopenTimerRef.current);
-    }
-    promptReopenTimerRef.current = window.setTimeout(() => {
-      isPromptReopenBlockedRef.current = false;
-      promptReopenTimerRef.current = null;
-    }, 500);
     setIsWebcamActive(false);
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
@@ -299,7 +285,6 @@ export default function Home() {
   };
 
   const openCameraPrompt = () => {
-    if (isPromptReopenBlockedRef.current) return;
     setCameraKnobActive(false);
     if (isMobilePopupView) {
       setShowCameraPromptIcon(false);
@@ -308,7 +293,6 @@ export default function Home() {
   };
 
   const toggleCameraPromptFromIcon = () => {
-    if (isPromptReopenBlockedRef.current) return;
     if (showErrorPopup) {
       closeCameraPrompt();
       return;
@@ -317,14 +301,6 @@ export default function Home() {
   };
 
   const closeCameraPrompt = () => {
-    isPromptReopenBlockedRef.current = true;
-    if (promptReopenTimerRef.current !== null) {
-      window.clearTimeout(promptReopenTimerRef.current);
-    }
-    promptReopenTimerRef.current = window.setTimeout(() => {
-      isPromptReopenBlockedRef.current = false;
-      promptReopenTimerRef.current = null;
-    }, 350);
     setCameraKnobActive(false);
     setShowErrorPopup(false);
   };
@@ -435,7 +411,7 @@ export default function Home() {
         opacity: heroOpacity,
         pointerEvents: heroPointerEventsTyped,
       }}
-      className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+2.1rem)] z-[10050] md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white/80 shadow-md backdrop-blur-lg transition-colors duration-150 hover:border-red-400/60 hover:bg-black/55 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+      className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+2.1rem)] z-[10050] md:hidden flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white/80 shadow-md backdrop-blur-lg transition-colors duration-150 hover:border-red-400/60 hover:bg-black/55 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
       onClick={disableCamera}
       type="button"
       aria-label="Disable camera"
